@@ -4,6 +4,7 @@ import re
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
+from collections.abc import Sequence
 from typing import Optional
 
 from sqlalchemy import delete, exists, func, or_, select, update
@@ -41,6 +42,7 @@ from app.services import reconciliation_service, recurring_match_service
 from app.services.text_similarity import token_overlap
 from app.services.account_service import (
     _simplefin_to_internal_balance,
+    purge_account,
     sync_opening_balance_for_connected_account,
 )
 from app.services.asset_group_service import (
@@ -246,6 +248,41 @@ def _sync_assets_enabled(settings: Optional[dict]) -> bool:
     return (settings or {}).get("sync_assets", True) is not False
 
 
+# Account selection lives in connection.settings, keyed by the provider's
+# account external id, so one bank login can feed several workspaces with
+# different accounts each (e.g. one SimpleFIN token per household member):
+#   provider_accounts           every account the provider returned last time,
+#                               so excluded ones can still be listed
+#   excluded_accounts           accounts never imported or synced
+#   import_new_accounts         False = accounts that appear later start out
+#                               excluded instead of being imported
+#   awaiting_account_selection  linked, but nothing imported until the user
+#                               picks accounts
+#   backfill_accounts           accounts brought back in, whose full history
+#                               the next sync fetches
+def _excluded_accounts(settings: Optional[dict]) -> set[str]:
+    return set((settings or {}).get("excluded_accounts") or [])
+
+
+def _awaiting_account_selection(settings: Optional[dict]) -> bool:
+    return bool((settings or {}).get("awaiting_account_selection"))
+
+
+def _account_snapshot(accounts: list[AccountData]) -> list[dict]:
+    return [
+        {
+            "external_id": acc.external_id,
+            "name": acc.name,
+            "type": acc.type,
+            "currency": acc.currency,
+            "balance": str(acc.balance),
+            "masked_number": acc.masked_number,
+            "institution_name": _clean_institution_name(acc.institution_name),
+        }
+        for acc in accounts
+    ]
+
+
 async def _sync_holdings(
     session: AsyncSession,
     user_id: uuid.UUID,
@@ -279,6 +316,9 @@ async def _sync_holdings(
             "Failed to fetch holdings for connection %s", connection.id
         )
         return
+    excluded = _excluded_accounts(connection.settings)
+    if excluded:
+        holdings = [h for h in holdings if h.account_external_id not in excluded]
 
     source = connection.provider
     today = app_today()
@@ -1024,6 +1064,167 @@ async def update_connection_settings(
     return connection
 
 
+async def _connection_account_rows(
+    session: AsyncSession, connection: BankConnection
+) -> list[dict]:
+    """Every account a connection can import, imported or not.
+
+    The provider snapshot lists what the bank offers; imported rows add their
+    account id and transaction count, and cover accounts the provider stopped
+    returning or connections linked before snapshots existed.
+    """
+    settings_ = connection.settings or {}
+    excluded = _excluded_accounts(settings_)
+    imported = (
+        await session.execute(
+            select(Account, Institution.name, func.count(Transaction.id))
+            .outerjoin(Institution, Institution.id == Account.institution_id)
+            .outerjoin(Transaction, Transaction.account_id == Account.id)
+            .where(Account.connection_id == connection.id)
+            .group_by(Account.id, Institution.name)
+            .order_by(Account.name)
+        )
+    ).all()
+    by_external_id = {account.external_id: (account, institution, count) for account, institution, count in imported}
+
+    rows: list[dict] = []
+    seen: set[str] = set()
+    for offered in settings_.get("provider_accounts") or []:
+        external_id = offered["external_id"]
+        if external_id in seen:
+            continue
+        seen.add(external_id)
+        account, _, count = by_external_id.get(external_id, (None, None, 0))
+        rows.append(
+            {
+                **offered,
+                "included": external_id not in excluded,
+                "account_id": account.id if account else None,
+                "transaction_count": count,
+                "is_closed": bool(account and account.is_closed),
+            }
+        )
+    for external_id, (account, institution, count) in by_external_id.items():
+        if external_id in seen or external_id is None:
+            continue
+        rows.append(
+            {
+                "external_id": external_id,
+                "name": account.name,
+                "type": account.type,
+                "currency": account.currency,
+                "balance": str(account.balance),
+                "masked_number": account.masked_number,
+                "institution_name": institution,
+                "included": external_id not in excluded,
+                "account_id": account.id,
+                "transaction_count": count,
+                "is_closed": account.is_closed,
+            }
+        )
+    return rows
+
+
+async def get_connection_accounts(
+    session: AsyncSession, connection_id: uuid.UUID, workspace_id: uuid.UUID
+) -> Optional[dict]:
+    connection = await get_connection(session, connection_id, workspace_id)
+    if not connection:
+        return None
+    settings_ = connection.settings or {}
+    return {
+        "accounts": await _connection_account_rows(session, connection),
+        "import_new_accounts": settings_.get("import_new_accounts", True) is not False,
+        "awaiting_selection": _awaiting_account_selection(settings_),
+    }
+
+
+async def update_connection_accounts(
+    session: AsyncSession,
+    connection_id: uuid.UUID,
+    workspace_id: uuid.UUID,
+    *,
+    excluded: list[str],
+    import_new_accounts: bool,
+    remove_history: list[str],
+) -> tuple[Optional[BankConnection], bool]:
+    """Save which accounts a connection imports.
+
+    Returns the connection and whether it now has accounts to import (the
+    caller syncs then). Excluded accounts that were already imported keep
+    their history unless listed in ``remove_history``, which deletes them
+    with their transactions.
+    """
+    connection = await get_connection(session, connection_id, workspace_id, for_update=True)
+    if not connection:
+        return None, False
+
+    rows = await _connection_account_rows(session, connection)
+    known = {row["external_id"] for row in rows}
+    new_excluded = set(excluded)
+    unknown = (new_excluded | set(remove_history)) - known
+    if unknown:
+        raise ValueError(f"Unknown accounts for this connection: {', '.join(sorted(unknown))}")
+    if set(remove_history) - new_excluded:
+        raise ValueError("Only excluded accounts can have their history removed")
+
+    current = dict(connection.settings or {})
+    was_awaiting = _awaiting_account_selection(current)
+    imported = {row["external_id"]: row["account_id"] for row in rows if row["account_id"]}
+
+    # Accounts coming in without imported rows need their whole history, not
+    # just the usual window since the last sync.
+    backfill = set(current.get("backfill_accounts") or [])
+    backfill |= {external_id for external_id in known - new_excluded if external_id not in imported}
+    backfill -= new_excluded
+    needs_import = was_awaiting or bool(backfill)
+
+    current["excluded_accounts"] = sorted(new_excluded)
+    current["import_new_accounts"] = import_new_accounts
+    current.pop("awaiting_account_selection", None)
+    if backfill:
+        current["backfill_accounts"] = sorted(backfill)
+    else:
+        current.pop("backfill_accounts", None)
+    # Older connections have no snapshot; seed it from the imported rows so
+    # "import new accounts" does not mistake them for new ones.
+    if not current.get("provider_accounts"):
+        current["provider_accounts"] = [
+            {key: row[key] for key in (
+                "external_id", "name", "type", "currency", "balance",
+                "masked_number", "institution_name",
+            )}
+            for row in rows
+        ]
+    connection.settings = current
+
+    for external_id in remove_history:
+        account_id = imported.get(external_id)
+        if account_id is None:
+            continue
+        account = await session.get(Account, account_id)
+        if account is None:
+            continue
+        payee_ids = list(
+            (
+                await session.execute(
+                    select(Transaction.payee_id)
+                    .where(
+                        Transaction.account_id == account.id,
+                        Transaction.payee_id.isnot(None),
+                    )
+                    .distinct()
+                )
+            ).scalars()
+        )
+        await purge_account(session, account)
+        await _delete_orphaned_payees(session, workspace_id, payee_ids)
+
+    await session.commit()
+    await session.refresh(connection)
+    return connection, needs_import
+
+
 async def handle_oauth_callback(
     session: AsyncSession,
     workspace_id: uuid.UUID,
@@ -1033,6 +1234,7 @@ async def handle_oauth_callback(
     state: Optional[str] = None,
     sync_assets: Optional[bool] = None,
     reconnect_connection_id: Optional[uuid.UUID] = None,
+    select_accounts: bool = False,
 ) -> BankConnection:
     state_payload: dict = {}
     if state:
@@ -1086,6 +1288,9 @@ async def handle_oauth_callback(
         sync_assets = flow_sync_assets
     if sync_assets is not None:
         initial_settings["sync_assets"] = sync_assets
+    initial_settings["provider_accounts"] = _account_snapshot(connection_data.accounts)
+    if select_accounts:
+        initial_settings["awaiting_account_selection"] = True
 
     connection = BankConnection(
         workspace_id=workspace_id,
@@ -1100,6 +1305,12 @@ async def handle_oauth_callback(
     )
     session.add(connection)
     await session.flush()
+
+    # The user picks accounts first; the sync after that choice imports them.
+    if select_accounts:
+        await session.commit()
+        await session.refresh(connection)
+        return connection
 
     user = await session.get(User, user_id)
     user_currency = user.primary_currency if user else get_settings().default_currency
@@ -1905,8 +2116,18 @@ async def sync_connection(
     user_id = connection.user_id
 
     conn_settings = connection.settings or {}
+    # Nothing is imported until the user has chosen which accounts to keep;
+    # scheduled syncs may reach the connection before that.
+    if _awaiting_account_selection(conn_settings):
+        return connection, 0
     payee_source = conn_settings.get("payee_source", "auto")
     import_pending = conn_settings.get("import_pending", True)
+    excluded = _excluded_accounts(conn_settings)
+    backfill = set(conn_settings.get("backfill_accounts") or [])
+    import_new_accounts = conn_settings.get("import_new_accounts", True) is not False
+    known_accounts = {
+        acc["external_id"] for acc in conn_settings.get("provider_accounts") or []
+    }
     use_provider_cats = await admin_service.use_provider_categories(session)
 
     # Resolve the provider before the error-handling block: an unregistered
@@ -1972,6 +2193,8 @@ async def sync_connection(
         incoming_external_ids = {acc.external_id for acc in accounts_data}
         institution_cache: dict[str, Institution] = {}
         for acc_data in accounts_data:
+            if acc_data.external_id in excluded:
+                continue
             institution = await _resolve_institution(
                 session, connection.id, institution_cache, acc_data
             )
@@ -1982,6 +2205,14 @@ async def sync_connection(
                 institution,
                 incoming_external_ids,
             )
+            if (
+                account is None
+                and not import_new_accounts
+                and acc_data.external_id not in known_accounts
+            ):
+                # A new account at the bank waits for the user to opt it in.
+                excluded.add(acc_data.external_id)
+                continue
 
             if account is not None:
                 account.user_id = user_id
@@ -2102,7 +2333,7 @@ async def sync_connection(
             # external_id below handles overlap cheaply.
             since = (
                 connection.last_sync_at.date() - timedelta(days=14)
-                if connection.last_sync_at
+                if connection.last_sync_at and acc_data.external_id not in backfill
                 else None
             )
             transactions_data = await provider.get_transactions(
@@ -2358,6 +2589,19 @@ async def sync_connection(
             # SUM(all txs) keeps matching account.balance from the provider.
             await sync_opening_balance_for_connected_account(session, account)
 
+        # Remember what the provider offers (so excluded accounts can still be
+        # listed and opted in) and which new accounts were held back. Written
+        # before the holdings sync below, which reads the exclusions.
+        connection.settings = {
+            **{
+                key: value
+                for key, value in (connection.settings or {}).items()
+                if key != "backfill_accounts"
+            },
+            "provider_accounts": _account_snapshot(accounts_data),
+            "excluded_accounts": sorted(excluded),
+        }
+
         # Detect transfer pairs among newly synced transactions
         if new_tx_ids:
             await detect_transfer_pairs(session, workspace_id, candidate_ids=new_tx_ids)
@@ -2522,24 +2766,32 @@ async def delete_connection(
     await session.delete(connection)
     await session.flush()
 
-    if affected_payee_ids:
-        has_transactions = exists(
-            select(Transaction.id).where(Transaction.payee_id == Payee.id)
-        )
-        has_external_mappings = exists(
-            select(PayeeMapping.id).where(
-                PayeeMapping.target_id == Payee.id,
-                PayeeMapping.id != Payee.id,
-            )
-        )
-        await session.execute(
-            delete(Payee).where(
-                Payee.workspace_id == workspace_id,
-                Payee.id.in_(affected_payee_ids),
-                ~has_transactions,
-                ~has_external_mappings,
-            )
-        )
+    await _delete_orphaned_payees(session, workspace_id, affected_payee_ids)
 
     await session.commit()
     return True
+
+
+async def _delete_orphaned_payees(
+    session: AsyncSession, workspace_id: uuid.UUID, payee_ids: Sequence[Optional[uuid.UUID]]
+) -> None:
+    """Remove the given payees once no transaction or mapping uses them."""
+    if not payee_ids:
+        return
+    has_transactions = exists(
+        select(Transaction.id).where(Transaction.payee_id == Payee.id)
+    )
+    has_external_mappings = exists(
+        select(PayeeMapping.id).where(
+            PayeeMapping.target_id == Payee.id,
+            PayeeMapping.id != Payee.id,
+        )
+    )
+    await session.execute(
+        delete(Payee).where(
+            Payee.workspace_id == workspace_id,
+            Payee.id.in_(payee_ids),
+            ~has_transactions,
+            ~has_external_mappings,
+        )
+    )

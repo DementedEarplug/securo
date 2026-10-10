@@ -1386,7 +1386,30 @@
     "syncAssetsHint": "Ak je vypnuté, prepojenie synchronizuje účty a transakcie, ale investičné pozície od poskytovateľa nechá nedotknuté.",
     "initialSyncSettings": "Možnosti synchronizácie",
     "initialSyncSettingsDesc": "Vyber, čo má Securo importovať, skôr než otvoríš konektor.",
-    "continueToConnector": "Pokračovať ku konektoru"
+    "continueToConnector": "Pokračovať ku konektoru",
+    "chooseAccounts": "Vybrať účty",
+    "chooseAccountsIntro": "Importujú a synchronizujú sa iba označené účty. Neoznačené účty sa nikdy nedostanú do tohto pracovného priestoru.",
+    "awaitingSelection": "Vyberte, ktoré účty importovať. Kým to neurobíte, nič sa neimportuje.",
+    "selectAll": "Vybrať všetky",
+    "clearAll": "Zrušiť výber",
+    "transactionCount": "Transakcie: {{count}}",
+    "importNewAccounts": "Automaticky importovať nové účty",
+    "importNewAccountsHint": "Ak je vypnuté, účty, ktoré sa v banke objavia neskôr, tu čakajú, kým ich neoznačíte.",
+    "historyTitle": "Zachovať importovanú históriu?",
+    "historyBody": "{{names}} sa prestane synchronizovať. Odstrániť už importované transakcie ({{count}}) alebo ich ponechať v tomto pracovnom priestore bez aktualizácií?",
+    "keepHistory": "Zachovať históriu",
+    "deleteHistory": "Odstrániť históriu",
+    "accountsSaved": "Účty uložené",
+    "saveAndImport": "Uložiť a importovať",
+    "importingAccounts": "Importujú sa vybrané účty a ich história. Môže to trvať minútu.",
+    "notImportedCount": "Neimportované účty: {{count}}",
+    "accountState": {
+      "imported": "Importovaný",
+      "willImport": "Bude importovaný s históriou",
+      "notImported": "Neimportovaný",
+      "willStop": "Prestane sa synchronizovať",
+      "historyKept": "Nesynchronizuje sa · história zachovaná"
+    }
   },
   "settings": {
     "rules": "Pravidlá",

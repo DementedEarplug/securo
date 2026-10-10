@@ -24,7 +24,7 @@ import { DatePickerInput } from '@/components/ui/date-picker-input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Account, BankConnection } from '@/types'
-import { RefreshCw, TriangleAlert, Unlink, Settings } from 'lucide-react'
+import { ListChecks, RefreshCw, TriangleAlert, Unlink, Settings } from 'lucide-react'
 import { AccountIcon, ConnectionLogo } from '@/components/account-icon'
 import { getAccountTypeConfig } from '@/lib/account-type-config'
 import { AccountPageActions } from '@/components/account-page-actions'
@@ -35,6 +35,7 @@ import { ConnectorSelectDialog, type Provider } from '@/components/connector-sel
 import { OAuthConnectDialog } from '@/components/oauth-connect-dialog'
 import { TokenConnectDialog } from '@/components/token-connect-dialog'
 import { ConnectionSettingsDialog } from '@/components/connection-settings-dialog'
+import { ConnectionAccountsDialog } from '@/components/connection-accounts-dialog'
 import { usePrivacyMode } from '@/hooks/use-privacy-mode'
 import { useAuth } from '@/contexts/auth-context'
 import { useCollectionFilter } from '@/contexts/collection-filter-context'
@@ -81,6 +82,7 @@ export default function AccountsPage() {
   const [connectorSelectOpen, setConnectorSelectOpen] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
   const [settingsConnection, setSettingsConnection] = useState<BankConnection | null>(null)
+  const [accountsConnection, setAccountsConnection] = useState<BankConnection | null>(null)
   const [disconnectingConnection, setDisconnectingConnection] = useState<BankConnection | null>(null)
   const [closingAccountId, setClosingAccountId] = useState<string | null>(null)
   const [reconnectConnId, setReconnectConnId] = useState<string | null>(null)
@@ -324,6 +326,8 @@ export default function AccountsPage() {
                 const connAccounts = bankAccounts.filter((a) => a.connection_id === conn.id)
                 const needsReconnect = conn.status !== 'active'
                 const syncPending = syncMutation.isPending && syncMutation.variables === conn.id
+                const awaitingSelection = Boolean(conn.settings?.awaiting_account_selection)
+                const notImported = conn.settings?.excluded_accounts?.length ?? 0
                 return (
                   <div key={conn.id} className="bg-card rounded-xl border border-border shadow-sm">
                     {/* Connection header */}
@@ -357,6 +361,16 @@ export default function AccountsPage() {
                       </div>
                       {canWrite && (
                         <div className="flex items-center gap-1.5">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                            onClick={() => setAccountsConnection(conn)}
+                            title={t('connections.chooseAccounts')}
+                            aria-label={t('connections.chooseAccounts')}
+                          >
+                            <ListChecks size={14} />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -402,8 +416,18 @@ export default function AccountsPage() {
                         </div>
                       )}
                     </div>
+                    {awaitingSelection && (
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+                        <p className="text-sm text-muted-foreground">{t('connections.awaitingSelection')}</p>
+                        {canWrite && (
+                          <Button size="sm" onClick={() => setAccountsConnection(conn)}>
+                            {t('connections.chooseAccounts')}
+                          </Button>
+                        )}
+                      </div>
+                    )}
                     {/* Accounts list */}
-                    {connAccounts.length > 0 ? (
+                    {awaitingSelection ? null : connAccounts.length > 0 ? (
                       <div className="divide-y divide-muted">
                         {connAccounts.map((acc) => {
                           const cfg = getAccountTypeConfig(acc.type)
@@ -463,6 +487,16 @@ export default function AccountsPage() {
                           {t(activeAccountIds ? 'accounts.emptyFiltered' : 'accounts.noAccountsFound')}
                         </p>
                       </div>
+                    )}
+                    {!awaitingSelection && notImported > 0 && (
+                      <button
+                        type="button"
+                        className="w-full border-t border-border px-5 py-2.5 text-left text-xs text-muted-foreground hover:bg-muted/50 hover:text-foreground disabled:pointer-events-none"
+                        onClick={() => setAccountsConnection(conn)}
+                        disabled={!canWrite}
+                      >
+                        {t('connections.notImportedCount', { count: notImported })}
+                      </button>
                     )}
                   </div>
                 )
@@ -617,6 +651,7 @@ export default function AccountsPage() {
         onClose={() => setSelectedProvider(null)}
         provider={selectedProvider?.name ?? ''}
         supportsAssetSync={selectedProvider?.supports_asset_sync ?? false}
+        onLinked={setAccountsConnection}
       />
 
       {/* Reconnect Dialog — widget-based (Pluggy) */}
@@ -633,6 +668,13 @@ export default function AccountsPage() {
         onClose={() => setTokenReconnectConnection(null)}
         provider={tokenReconnectConnection?.provider ?? ''}
         reconnectConnectionId={tokenReconnectConnection?.id}
+      />
+
+      {/* Which of a connection's accounts are imported */}
+      <ConnectionAccountsDialog
+        open={!!accountsConnection}
+        onClose={() => setAccountsConnection(null)}
+        connection={accountsConnection}
       />
 
       {/* Connection Settings Dialog */}

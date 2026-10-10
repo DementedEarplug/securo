@@ -1322,7 +1322,30 @@
     "syncAssetsHint": "Lorsqu'il est désactivé, cette connexion synchronise les comptes et transactions mais ne touche pas aux positions d'investissement du fournisseur.",
     "initialSyncSettings": "Options de synchronisation",
     "initialSyncSettingsDesc": "Choisissez ce que Securo doit importer avant d'ouvrir le connecteur.",
-    "continueToConnector": "Continuer vers le connecteur"
+    "continueToConnector": "Continuer vers le connecteur",
+    "chooseAccounts": "Choisir les comptes",
+    "chooseAccountsIntro": "Seuls les comptes cochés sont importés et synchronisés. Les comptes non cochés n'arrivent jamais dans cet espace de travail.",
+    "awaitingSelection": "Choisissez les comptes à importer. Rien n'est importé avant votre choix.",
+    "selectAll": "Tout sélectionner",
+    "clearAll": "Tout désélectionner",
+    "transactionCount": "Transactions : {{count}}",
+    "importNewAccounts": "Importer automatiquement les nouveaux comptes",
+    "importNewAccountsHint": "Si décoché, les comptes qui apparaissent plus tard à la banque attendent ici jusqu'à ce que vous les cochiez.",
+    "historyTitle": "Conserver l'historique importé ?",
+    "historyBody": "{{names}} ne sera plus synchronisé. Supprimer les transactions déjà importées ({{count}}) ou les conserver dans cet espace de travail sans mises à jour ?",
+    "keepHistory": "Conserver l'historique",
+    "deleteHistory": "Supprimer l'historique",
+    "accountsSaved": "Comptes enregistrés",
+    "saveAndImport": "Enregistrer et importer",
+    "importingAccounts": "Importation des comptes sélectionnés et de leur historique. Cela peut prendre une minute.",
+    "notImportedCount": "Comptes non importés : {{count}}",
+    "accountState": {
+      "imported": "Importé",
+      "willImport": "Sera importé avec son historique",
+      "notImported": "Non importé",
+      "willStop": "Ne sera plus synchronisé",
+      "historyKept": "Non synchronisé · historique conservé"
+    }
   },
   "settings": {
     "rules": "Règles",

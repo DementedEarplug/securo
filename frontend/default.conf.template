@@ -23,6 +23,16 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # Android app ↔ site trust statement (passkeys). The backend builds it from
+    # WEBAUTHN_ANDROID_* settings; Android only looks for it at this exact path.
+    location = /.well-known/assetlinks.json {
+        resolver ${NGINX_RESOLVER} valid=5s;
+        set $upstream ${BACKEND_URL};
+        proxy_pass $upstream;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # Never cache index.html so new deployments are always picked up immediately
     location = /index.html {
         add_header Cache-Control "no-store, no-cache, must-revalidate";

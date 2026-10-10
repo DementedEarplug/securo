@@ -56,6 +56,8 @@ The same applies to issues. An issue produced by pointing a model at the reposit
 2. Make your changes
 3. Run backend tests: `cd backend && uv sync --all-extras && uv run pytest` (Python 3.11+)
 4. Run frontend checks: `cd frontend && npm run lint && npm test`
+   - Changed `mobile/`? Run `cd mobile && npm run lint && npm run typecheck && npm test`
+   - Changed an API route or schema? Run `npm run api:types` in `mobile/` and commit the regenerated snapshot (CI checks it)
 5. Commit with a clear message (see below)
 6. Push your branch and open a Pull Request
 
@@ -82,7 +84,7 @@ with the `@/` alias rather than a relative path. Assert on what the user sees:
 the rendered text, the disabled button, the error that appears on a failed
 request.
 
-### Adding a frontend dependency
+### Adding a frontend or mobile dependency
 
 `frontend/.npmrc` never runs a package's install scripts, and asks npm to skip
 releases younger than seven days so a compromised publish has time to be caught.
@@ -92,6 +94,7 @@ and will ignore that line without saying so, so upgrade before you add anything:
 ```bash
 npm install --global npm@latest
 cd frontend && npm install <package>     # commit package.json and package-lock.json
+cd mobile && npx expo install <package>  # native modules: lets Expo pick the SDK-compatible version
 ```
 
 If the package you want was published in the last week, npm resolves the release
@@ -169,6 +172,7 @@ someone's `alembic upgrade head` after both are merged.
 ```
 backend/     → FastAPI + SQLAlchemy + Celery
 frontend/    → React + TypeScript + Vite + Tailwind
+mobile/      → React Native + Expo (Android app)
 docs/        → Design and implementation docs
 scripts/     → Development utilities
 ```

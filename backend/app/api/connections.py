@@ -17,6 +17,8 @@ from app.providers.base import (
 )
 from app.schemas.bank_connection import (
     BankConnectionRead,
+    ConnectionAccountsRead,
+    ConnectionAccountsUpdate,
     ConnectionSettingsUpdate,
     ConnectTokenRequest,
     ConnectTokenResponse,
@@ -112,6 +114,7 @@ async def oauth_callback(
             state=data.state,
             sync_assets=data.sync_assets,
             reconnect_connection_id=data.reconnect_connection_id,
+            select_accounts=data.select_accounts,
         )
         return connection
     except ProviderUserActionRequired as e:
@@ -166,16 +169,26 @@ async def sync_connection(
     ctx: WorkspaceContext = Depends(current_writable_workspace),
     session: AsyncSession = Depends(get_async_session),
 ):
+    # Manual sync is user-initiated, so ask the provider to pull fresh
+    # data from the bank before we read. Scheduled syncs (Celery) keep
+    # the default behaviour: read whatever the provider already has.
+    return await _sync(session, connection_id, ctx, trigger_provider_refresh=True)
+
+
+async def _sync(
+    session: AsyncSession,
+    connection_id: uuid.UUID,
+    ctx: WorkspaceContext,
+    *,
+    trigger_provider_refresh: bool,
+) -> dict:
     try:
-        # Manual sync is user-initiated, so ask the provider to pull fresh
-        # data from the bank before we read. Scheduled syncs (Celery) keep
-        # the default behaviour: read whatever the provider already has.
         connection, merged_count = await connection_service.sync_connection(
             session,
             connection_id,
             ctx.workspace.id,
             ctx.user_id,
-            trigger_provider_refresh=True,
+            trigger_provider_refresh=trigger_provider_refresh,
         )
         result = BankConnectionRead.model_validate(connection)
         return {**result.model_dump(mode="json"), "merged_count": merged_count}
@@ -199,6 +212,51 @@ async def sync_connection(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Sync failed: {str(e)}",
         )
+
+
+@router.get("/{connection_id}/accounts", response_model=ConnectionAccountsRead)
+async def get_connection_accounts(
+    connection_id: uuid.UUID,
+    ctx: WorkspaceContext = Depends(current_workspace),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Every account the connection can import, with whether it is imported."""
+    result = await connection_service.get_connection_accounts(session, connection_id, ctx.workspace.id)
+    if result is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Connection not found")
+    return result
+
+
+@router.put("/{connection_id}/accounts", response_model=BankConnectionRead)
+async def update_connection_accounts(
+    connection_id: uuid.UUID,
+    data: ConnectionAccountsUpdate,
+    ctx: WorkspaceContext = Depends(current_writable_workspace),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Choose which accounts the connection imports.
+
+    Accounts that come in with nothing imported yet (the first choice after
+    linking with ``select_accounts``, or an account opted back in) are
+    imported right away, with their full history.
+    """
+    try:
+        connection, needs_import = await connection_service.update_connection_accounts(
+            session,
+            connection_id,
+            ctx.workspace.id,
+            excluded=data.excluded,
+            import_new_accounts=data.import_new_accounts,
+            remove_history=data.remove_history,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    if connection is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Connection not found")
+    if needs_import:
+        # Reads what the provider already has: SimpleFIN allows few requests a day.
+        return await _sync(session, connection_id, ctx, trigger_provider_refresh=False)
+    return connection
 
 
 @router.post("/{connection_id}/reconnect-token", response_model=ReconnectTokenResponse)

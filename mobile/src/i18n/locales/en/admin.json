@@ -1,0 +1,95 @@
+{
+  "tabs": {
+    "users": "Users",
+    "settings": "Settings"
+  },
+  "users": {
+    "search": "Search",
+    "searchPlaceholder": "Email address",
+    "add": "Add user",
+    "edit": "Edit user",
+    "addDesc": "Create an account that can sign in to this Securo server.",
+    "ssoOnly": "This server only allows single sign-on, so users are added through your identity provider.",
+    "empty": "No users found.",
+    "showing": "Showing {{shown}} of {{total}} users. Search to narrow the list.",
+    "admin": "Admin",
+    "user": "User",
+    "inactive": "Inactive",
+    "you": "You",
+    "email": "Email",
+    "password": "Password",
+    "newPassword": "New password",
+    "resetPassword": "Reset password",
+    "resetPasswordPlaceholder": "Leave blank to keep the current one",
+    "language": "Language",
+    "currency": "Display currency",
+    "active": "Active",
+    "activeHint": "Inactive users can't sign in. Their data is kept.",
+    "adminRole": "Administrator",
+    "adminRoleHint": "Administrators manage users and these server settings.",
+    "selfLocked": "You can't change this for your own account.",
+    "delete": "Delete user",
+    "deleteTitle": "Delete user?",
+    "deleteBody": "This permanently deletes {{email}} and all their data. This can't be undone.",
+    "errors": {
+      "email": "Enter a valid email address.",
+      "passwordShort": "Use at least {{min}} characters.",
+      "passwordLong": "Use at most {{max}} characters."
+    }
+  },
+  "settings": {
+    "registrationTitle": "Registration",
+    "registration": "Allow user registration",
+    "registrationDesc": "When off, only admins can create new user accounts.",
+    "accountingTitle": "Accounting",
+    "accountingSubtitle": "How credit card transactions are counted in dashboards, reports and budgets.",
+    "accounting": {
+      "cash": "Cash basis",
+      "accrual": "Accrual basis",
+      "cashDesc": "Credit card purchases count on the day they happen (default).",
+      "accrualDesc": "Credit card purchases count on the bill's due date, which reflects actual cash flow."
+    },
+    "providerCategoriesTitle": "Categories",
+    "providerCategories": "Use integration categories",
+    "providerCategoriesDesc": "When off, synced transactions arrive uncategorized so only your rules apply.",
+    "formatsTitle": "Number and date format",
+    "numberFormat": "Number format",
+    "numberFormatDesc": "How amounts are shown across the app, for everyone.",
+    "numberFormats": {
+      "auto": "Automatic",
+      "comma_dot": "1,000.00",
+      "dot_comma": "1.000,00",
+      "space_comma": "1 000,00"
+    },
+    "numberFormatHints": {
+      "auto": "Follows each currency's convention, like €1.000,00 or $1,000.00.",
+      "comma_dot": "Comma thousands, dot decimal",
+      "dot_comma": "Dot thousands, comma decimal",
+      "space_comma": "Space thousands, comma decimal"
+    },
+    "dateFormat": "Date format",
+    "dateFormatDesc": "How dates are shown. Month names always follow each user's language.",
+    "dateFormats": {
+      "auto": "Automatic",
+      "dmy": "Day / Month / Year",
+      "mdy": "Month / Day / Year",
+      "ymd": "Year / Month / Day"
+    },
+    "dateFormatHints": {
+      "auto": "Matches the number format (day first in Europe, month first in the US).",
+      "dmy": "Day first, e.g. 04/06/2026.",
+      "mdy": "Month first, e.g. 06/04/2026.",
+      "ymd": "ISO order, e.g. 2026-06-04."
+    },
+    "timezoneTitle": "Date and time",
+    "timezone": "Application timezone",
+    "timezoneHelp": "Calendar dates, recurring transactions, scheduled work and AI context use this timezone. Changes apply to new requests and jobs.",
+    "timezoneServerDefault": "Server default ({{zone}})",
+    "timezoneSavedInvalid": "The saved value {{value}} is not a timezone this server knows. {{zone}} is in use until it is changed.",
+    "colorsTitle": "Web theme colors",
+    "colorsDesc": "The accent colors of the web app. The mobile app keeps its own palette.",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "colorInvalid": "Use a hex color like #4F46E5."
+  }
+}

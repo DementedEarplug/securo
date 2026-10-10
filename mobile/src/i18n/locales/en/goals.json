@@ -1,0 +1,39 @@
+{
+  "newTitle": "New goal",
+  "editTitle": "Edit goal",
+  "emptyTitle": "No goals yet",
+  "emptyBody": "Save toward something: an emergency fund, a trip, a down payment.",
+  "otherSection": "Paused, completed and archived",
+  "onTrack": {
+    "ahead": "Ahead",
+    "on_track": "On track",
+    "behind": "Behind",
+    "overdue": "Overdue",
+    "achieved": "Achieved"
+  },
+  "by": "by {{date}}",
+  "of": "of {{amount}}",
+  "monthly": "Save {{amount}} a month to get there on time",
+  "target": "Target",
+  "current": "Saved so far",
+  "targetDate": "Target date",
+  "noDate": "No date",
+  "tracking": "Progress comes from",
+  "trackingTypes": {
+    "manual": "What I enter",
+    "account": "An account's balance",
+    "asset": "An asset's value",
+    "asset_group": "A wallet of assets",
+    "net_worth": "My net worth"
+  },
+  "trackingHint": "Progress updates on its own from the balance or value.",
+  "linkRequired": "Choose what this goal tracks.",
+  "pause": "Pause",
+  "resume": "Resume",
+  "complete": "Mark as completed",
+  "archive": "Archive",
+  "reactivate": "Make active again",
+  "deleteTitle": "Delete this goal?",
+  "deleteBody": "{{name}} will be deleted.",
+  "defaultIcon": "Target"
+}

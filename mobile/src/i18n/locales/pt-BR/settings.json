@@ -1,0 +1,24 @@
+{
+  "title": "Ajustes",
+  "signedInAs": "Conectado como",
+  "server": "Servidor",
+  "workspace": "Espaço de trabalho",
+  "language": "Idioma",
+  "languageAuto": "Igual à minha conta Securo",
+  "languages": {
+    "en": "English",
+    "pt-BR": "Português (Brasil)"
+  },
+  "devices": "Dispositivos conectados",
+  "devicesHint": "Celulares que continuam conectados",
+  "devicesIntro": "Estes dispositivos continuam conectados sem senha. Revogue os que você não usa mais ou não reconhece. Alterar sua senha desconecta todos.",
+  "devicesEmpty": "Nenhum dispositivo conectado.",
+  "unknownDevice": "Dispositivo desconhecido",
+  "lastActive": "Ativo em {{date}}",
+  "revoke": "Revogar",
+  "revokeTitle": "Revogar acesso?",
+  "revokeBody": "{{name}} precisará entrar novamente.",
+  "signOut": "Sair",
+  "signOutTitle": "Sair?",
+  "signOutBody": "Você precisará da sua senha para entrar novamente neste celular."
+}

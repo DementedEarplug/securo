@@ -1,0 +1,63 @@
+{
+  "title": "Contas",
+  "balance": "Saldo",
+  "totalBalance": "Saldo total",
+  "incomeThisMonth": "Receitas no mês",
+  "expensesThisMonth": "Despesas no mês",
+  "emptyTitle": "Nenhuma conta ainda",
+  "emptyBody": "Adicione uma conta com o botão +, ou conecte um banco em Mais → Conexões bancárias.",
+  "closed": "Encerrada",
+  "owed": "Valor devido",
+  "closedAccounts": "Contas encerradas",
+  "close": "Encerrar conta",
+  "reopen": "Reabrir conta",
+  "closeTitle": "Encerrar esta conta?",
+  "closeBody": "Ela vai para Contas encerradas e deixa de contar nos seus totais. Você pode reabri-la depois.",
+  "closeBodyConnected": "Ela vai para Contas encerradas e para de sincronizar com o banco. Você pode reabri-la depois.",
+  "deleteTitle": "Excluir esta conta?",
+  "deleteBody": "{{name}} e todas as suas transações serão excluídas. Isso não pode ser desfeito.",
+  "limit": "Limite {{amount}}",
+  "nextDue": "Vence {{date}}",
+  "form": {
+    "newTitle": "Nova conta",
+    "editTitle": "Editar conta",
+    "name": "Nome",
+    "displayName": "Nome exibido no Securo",
+    "type": "Tipo",
+    "currency": "Moeda",
+    "openingBalance": "Saldo inicial",
+    "openingBalanceHint": "Quanto a conta tinha na data abaixo. As transações seguintes partem daí.",
+    "amountOwed": "Valor devido",
+    "amountOwedHint": "Quanto você devia no cartão na data abaixo, como número positivo.",
+    "balanceDate": "Em",
+    "creditLimit": "Limite de crédito",
+    "closeDay": "Fatura fecha no dia",
+    "dueDay": "Vencimento no dia",
+    "connectedNotice": "Esta conta vem do seu banco. Você pode renomeá-la e mudar o tipo; o resto é sincronizado.",
+    "nameRequired": "Digite um nome.",
+    "amountInvalid": "Digite um valor válido.",
+    "dayInvalid": "Use um dia de 1 a 31."
+  },
+  "history": {
+    "balanceTitle": "Saldo ao longo do tempo",
+    "owedTitle": "Valor devido ao longo do tempo",
+    "cycleTitle": "Gastos nesta fatura",
+    "modes": {
+      "cycle": "Fatura atual",
+      "balance": "Saldo"
+    },
+    "ranges": {
+      "1M": "1M",
+      "3M": "3M",
+      "6M": "6M",
+      "1Y": "1A",
+      "all": "Tudo"
+    },
+    "sinceStart": "desde {{range}}",
+    "cycleRange": "Ciclo {{range}}",
+    "empty": "Ainda não há histórico suficiente para o gráfico.",
+    "balanceA11y": "O saldo foi de {{start}} para {{end}}, {{range}}",
+    "owedA11y": "O valor devido foi de {{start}} para {{end}}, {{range}}",
+    "cycleA11y": "{{amount}} gastos no ciclo {{range}}"
+  }
+}

@@ -7,8 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_async_session
 from app.core.workspace_context import WorkspaceContext, current_workspace
-from app.schemas.report import ReportResponse
-from app.services import report_service
+from app.core.app_clock import app_today
+from app.schemas.report import PayeeReportResponse, ReportResponse
+from app.services import payee_report_service, report_service
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -153,4 +154,39 @@ async def get_cash_flow(
     return await report_service.get_cash_flow_report(
         session, ctx.workspace.id, ctx.user_id, months, interval, ctx.user.primary_currency,
         baseline=baseline, account_ids=account_ids,
+    )
+
+
+@router.get("/payees", response_model=PayeeReportResponse)
+async def get_payees(
+    type: str = Query("debit", pattern="^(debit|credit)$", description="debit = spending, credit = income"),
+    months: int = Query(1, ge=1, le=24),
+    period: str | None = Query(None, pattern="^ytd$"),
+    days: Optional[int] = Query(None, ge=1, le=730),
+    start_date: date | None = Query(None),
+    end_date: date | None = Query(None),
+    account_ids: Optional[list[uuid.UUID]] = Query(None),
+    limit: int = Query(10, ge=1, le=50),
+    ctx: WorkspaceContext = Depends(current_workspace),
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Payees ranked by total for the window, with the previous same-length
+    window's total for each. The window follows the income/expenses rules:
+    `start_date`/`end_date` win, then `days`, then `period=ytd`, then `months`
+    (month-aligned, ending today). Rows without a payee are summed separately
+    in `unassigned` instead of being ranked."""
+    financial_year_start_month = _financial_year_start_month(ctx.workspace.tax_jurisdiction)
+    custom_start, custom_end = _resolve_custom_range(start_date, end_date)
+    end = custom_end or app_today()
+    start = report_service._report_start_date(
+        end,
+        months,
+        period=None if custom_start is not None else period,
+        days=days,
+        financial_year_start_month=financial_year_start_month,
+        start_date=custom_start,
+    )
+    return await payee_report_service.get_payee_report(
+        session, ctx.workspace.id, ctx.user_id, start, end, ctx.user.primary_currency,
+        tx_type=type, account_ids=account_ids, limit=limit,
     )

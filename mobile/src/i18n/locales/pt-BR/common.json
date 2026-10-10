@@ -1,0 +1,20 @@
+{
+  "cancel": "Cancelar",
+  "close": "Fechar",
+  "continue": "Continuar",
+  "delete": "Excluir",
+  "edit": "Editar",
+  "errorTitle": "Algo deu errado",
+  "retry": "Tentar novamente",
+  "save": "Salvar",
+  "search": "Buscar",
+  "selected": "selecionado",
+  "frequencies": {
+    "weekly": "Semanal",
+    "biweekly": "Quinzenal",
+    "monthly": "Mensal",
+    "quarterly": "Trimestral",
+    "semiannual": "Semestral",
+    "yearly": "Anual"
+  }
+}

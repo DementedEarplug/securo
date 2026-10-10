@@ -1,0 +1,39 @@
+{
+  "newTitle": "Nova meta",
+  "editTitle": "Editar meta",
+  "emptyTitle": "Nenhuma meta ainda",
+  "emptyBody": "Junte dinheiro para algo: reserva de emergência, uma viagem, uma entrada.",
+  "otherSection": "Pausadas, concluídas e arquivadas",
+  "onTrack": {
+    "ahead": "Adiantada",
+    "on_track": "No ritmo",
+    "behind": "Atrasada",
+    "overdue": "Vencida",
+    "achieved": "Alcançada"
+  },
+  "by": "até {{date}}",
+  "of": "de {{amount}}",
+  "monthly": "Guarde {{amount}} por mês para chegar no prazo",
+  "target": "Meta",
+  "current": "Guardado até agora",
+  "targetDate": "Data da meta",
+  "noDate": "Sem data",
+  "tracking": "O progresso vem de",
+  "trackingTypes": {
+    "manual": "O que eu informar",
+    "account": "Saldo de uma conta",
+    "asset": "Valor de um bem",
+    "asset_group": "Uma carteira de bens",
+    "net_worth": "Meu patrimônio"
+  },
+  "trackingHint": "O progresso se atualiza sozinho pelo saldo ou valor.",
+  "linkRequired": "Escolha o que esta meta acompanha.",
+  "pause": "Pausar",
+  "resume": "Retomar",
+  "complete": "Marcar como concluída",
+  "archive": "Arquivar",
+  "reactivate": "Reativar",
+  "deleteTitle": "Excluir esta meta?",
+  "deleteBody": "{{name}} será excluída.",
+  "defaultIcon": "Alvo"
+}

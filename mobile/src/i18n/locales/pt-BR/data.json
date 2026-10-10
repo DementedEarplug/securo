@@ -1,0 +1,43 @@
+{
+  "workspaceNotice": "Exportações e backups incluem o workspace atual, {{name}}.",
+  "periods": {
+    "all": "Todo o período",
+    "thisMonth": "Este mês",
+    "lastMonth": "Mês passado",
+    "thisYear": "Este ano",
+    "custom": "Período personalizado"
+  },
+  "csv": {
+    "title": "Transações (CSV)",
+    "description": "Uma planilha das suas transações com data, descrição, valor, categoria, conta, favorecido e observações.",
+    "period": "Período",
+    "from": "De",
+    "to": "Até",
+    "accounts": "Contas",
+    "allAccounts": "Todas as contas",
+    "accountCount_one": "{{count}} conta",
+    "accountCount_other": "{{count}} contas",
+    "excludeIgnored": "Deixar de fora transações ignoradas",
+    "excludeIgnoredHint": "Pula as linhas marcadas como ignoradas e as de categorias ignoradas.",
+    "button": "Exportar CSV"
+  },
+  "rules": {
+    "title": "Regras de categorização (JSON)",
+    "description": "Suas regras em um arquivo que pode ser importado em outro workspace ou servidor Securo.",
+    "button": "Exportar regras"
+  },
+  "backup": {
+    "title": "Backup do workspace",
+    "description": "Um zip com todas as contas, transações e regras deste workspace, em JSON puro.",
+    "passwordLabel": "Senha (opcional)",
+    "passwordPlaceholder": "Deixe em branco para um backup sem criptografia",
+    "confirmLabel": "Confirme a senha",
+    "passwordTooShort": "Use pelo menos {{min}} caracteres.",
+    "passwordMismatch": "As senhas não coincidem.",
+    "encryptionNote": "O arquivo é criptografado com AES-256 e abre em qualquer compactador. O Securo não guarda essa senha e não consegue recuperar o arquivo sem ela.",
+    "button": "Criar backup",
+    "success": "Backup criado.",
+    "successEncrypted": "Backup criptografado criado. Guarde a senha em um lugar seguro.",
+    "restoreNote": "O Securo ainda não restaura backups. Guarde o arquivo como registro; ele abre em qualquer programa de zip."
+  }
+}

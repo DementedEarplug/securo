@@ -1,0 +1,63 @@
+{
+  "title": "Accounts",
+  "balance": "Balance",
+  "totalBalance": "Total balance",
+  "incomeThisMonth": "Income this month",
+  "expensesThisMonth": "Expenses this month",
+  "emptyTitle": "No accounts yet",
+  "emptyBody": "Add an account with the + button, or link a bank under More → Bank connections.",
+  "closed": "Closed",
+  "owed": "Amount owed",
+  "closedAccounts": "Closed accounts",
+  "close": "Close account",
+  "reopen": "Reopen account",
+  "closeTitle": "Close this account?",
+  "closeBody": "It moves to Closed accounts and stops counting in your totals. You can reopen it later.",
+  "closeBodyConnected": "It moves to Closed accounts and stops syncing from the bank. You can reopen it later.",
+  "deleteTitle": "Delete this account?",
+  "deleteBody": "{{name}} and all of its transactions will be deleted. This cannot be undone.",
+  "limit": "Limit {{amount}}",
+  "nextDue": "Due {{date}}",
+  "form": {
+    "newTitle": "New account",
+    "editTitle": "Edit account",
+    "name": "Name",
+    "displayName": "Name shown in Securo",
+    "type": "Type",
+    "currency": "Currency",
+    "openingBalance": "Opening balance",
+    "openingBalanceHint": "What the account held on the date below. Transactions after it add up from there.",
+    "amountOwed": "Amount owed",
+    "amountOwedHint": "What you owed on the card on the date below, as a positive number.",
+    "balanceDate": "As of",
+    "creditLimit": "Credit limit",
+    "closeDay": "Statement closes on day",
+    "dueDay": "Payment due on day",
+    "connectedNotice": "This account comes from your bank. You can rename it and change its type; the rest is kept in sync.",
+    "nameRequired": "Enter a name.",
+    "amountInvalid": "Enter a valid amount.",
+    "dayInvalid": "Use a day from 1 to 31."
+  },
+  "history": {
+    "balanceTitle": "Balance over time",
+    "owedTitle": "Amount owed over time",
+    "cycleTitle": "Spending this billing cycle",
+    "modes": {
+      "cycle": "This cycle",
+      "balance": "Balance"
+    },
+    "ranges": {
+      "1M": "1M",
+      "3M": "3M",
+      "6M": "6M",
+      "1Y": "1Y",
+      "all": "All"
+    },
+    "sinceStart": "since {{range}}",
+    "cycleRange": "Cycle {{range}}",
+    "empty": "Not enough history to draw a chart yet.",
+    "balanceA11y": "Balance went from {{start}} to {{end}}, {{range}}",
+    "owedA11y": "Amount owed went from {{start}} to {{end}}, {{range}}",
+    "cycleA11y": "{{amount}} spent in the cycle {{range}}"
+  }
+}

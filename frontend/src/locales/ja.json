@@ -1318,7 +1318,30 @@
     "syncAssetsHint": "無効にすると、この接続は口座と取引を同期しますが、プロバイダーの投資保有はそのままにします。",
     "initialSyncSettings": "同期オプション",
     "initialSyncSettingsDesc": "コネクタを開く前にSecuroがインポートする内容を選択してください。",
-    "continueToConnector": "コネクタへ進む"
+    "continueToConnector": "コネクタへ進む",
+    "chooseAccounts": "口座を選択",
+    "chooseAccountsIntro": "チェックした口座だけがインポートされ、同期されます。チェックしていない口座はこのワークスペースに入りません。",
+    "awaitingSelection": "インポートする口座を選んでください。選ぶまで何もインポートされません。",
+    "selectAll": "すべて選択",
+    "clearAll": "すべて解除",
+    "transactionCount": "取引: {{count}}件",
+    "importNewAccounts": "新しい口座を自動でインポート",
+    "importNewAccountsHint": "オフの場合、後から銀行に追加された口座は、チェックするまでここで待機します。",
+    "historyTitle": "インポート済みの履歴を残しますか？",
+    "historyBody": "{{names}} の同期を停止します。インポート済みの取引（{{count}}件）を削除しますか？それとも更新なしでこのワークスペースに残しますか？",
+    "keepHistory": "履歴を残す",
+    "deleteHistory": "履歴を削除",
+    "accountsSaved": "口座を保存しました",
+    "saveAndImport": "保存してインポート",
+    "importingAccounts": "選択した口座とその履歴をインポートしています。1分ほどかかる場合があります。",
+    "notImportedCount": "インポートしていない口座: {{count}}",
+    "accountState": {
+      "imported": "インポート済み",
+      "willImport": "履歴ごとインポートされます",
+      "notImported": "インポートしない",
+      "willStop": "同期を停止します",
+      "historyKept": "同期なし・履歴を保持"
+    }
   },
   "settings": {
     "rules": "ルール",

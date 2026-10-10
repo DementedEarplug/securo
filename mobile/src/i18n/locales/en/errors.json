@@ -1,0 +1,14 @@
+{
+  "badCredentials": "Incorrect email or password.",
+  "challengeExpired": "This sign-in attempt expired. Enter your password again.",
+  "generic": "The request could not be completed.",
+  "invalidCode": "That code is not valid. Check your authenticator app and try again.",
+  "localAuthDisabled": "This server only allows single sign-on, which the app does not support yet.",
+  "network": "Could not reach the server. Check your connection and try again.",
+  "rateLimited": "Too many attempts. Try again in {{seconds}} seconds.",
+  "readOnly": "Your role in this workspace is read-only.",
+  "server": "The server ran into a problem. Try again later.",
+  "setupTokenUsed": "That setup token was already used or has expired. Create a new one in SimpleFIN Bridge.",
+  "credentialsInvalid": "The bank refused the saved login. Reconnect this bank to continue syncing.",
+  "noAccountsLinked": "The bank didn't share any accounts. Choose the accounts to share at the provider, then try again."
+}

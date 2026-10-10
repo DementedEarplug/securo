@@ -50,6 +50,10 @@ export default defineConfig(async ({ mode }) => {
           target: backendUrl ?? 'http://localhost:8000',
           changeOrigin: true,
         },
+        '/.well-known/assetlinks.json': {
+          target: backendUrl ?? 'http://localhost:8000',
+          changeOrigin: true,
+        },
       },
       watch: {
         usePolling: true,

@@ -12,7 +12,7 @@
   },
   "packageRules": [
     {
-      "description": "Cooldown before we pick up a new release, so a compromised publish has time to be caught and unpublished. Mirrors `min-release-age` in frontend/.npmrc, which only covers a dependency added by hand.",
+      "description": "Cooldown before we pick up a new release, so a compromised publish has time to be caught and unpublished. Mirrors `min-release-age` in frontend/.npmrc and mobile/.npmrc, which only cover a dependency added by hand.",
       "matchManagers": ["npm"],
       "minimumReleaseAge": "7 days"
     },
@@ -25,6 +25,23 @@
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "frontend (non-major)"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchFileNames": ["mobile/**"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "mobile (non-major)"
+    },
+    {
+      "description": "Expo pins the native modules each SDK was built against, so they move together; an SDK upgrade is `npx expo install --fix` in mobile/, never a version bump on its own.",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["mobile/**"],
+      "matchPackageNames": [
+        "expo", "/^expo-/", "jest-expo", "eslint-config-expo", "babel-preset-expo",
+        "react", "react-dom", "@types/react", "react-native", "/^react-native-/", "/^@react-native/",
+        "@react-native-community/datetimepicker", "@react-native-async-storage/async-storage", "typescript"
+      ],
+      "groupName": "Expo SDK"
     },
     {
       "matchManagers": ["pep621"],

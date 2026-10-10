@@ -1319,7 +1319,30 @@
     "syncAssetsHint": "Wenn deaktiviert, synchronisiert diese Verbindung Konten und Transaktionen, lässt aber Investment-Bestände des Anbieters unverändert.",
     "initialSyncSettings": "Synchronisierungsoptionen",
     "initialSyncSettingsDesc": "Wähle aus, was Securo importieren soll, bevor der Connector geöffnet wird.",
-    "continueToConnector": "Weiter zum Connector"
+    "continueToConnector": "Weiter zum Connector",
+    "chooseAccounts": "Konten auswählen",
+    "chooseAccountsIntro": "Nur die markierten Konten werden importiert und synchronisiert. Nicht markierte Konten gelangen nie in diesen Arbeitsbereich.",
+    "awaitingSelection": "Wähle aus, welche Konten importiert werden. Bis dahin wird nichts importiert.",
+    "selectAll": "Alle auswählen",
+    "clearAll": "Auswahl aufheben",
+    "transactionCount": "Transaktionen: {{count}}",
+    "importNewAccounts": "Neue Konten automatisch importieren",
+    "importNewAccountsHint": "Wenn deaktiviert, warten Konten, die später bei der Bank erscheinen, hier, bis du sie markierst.",
+    "historyTitle": "Importierten Verlauf behalten?",
+    "historyBody": "{{names}} wird nicht mehr synchronisiert. Die bereits importierten Transaktionen ({{count}}) löschen oder ohne Aktualisierungen in diesem Arbeitsbereich behalten?",
+    "keepHistory": "Verlauf behalten",
+    "deleteHistory": "Verlauf löschen",
+    "accountsSaved": "Konten gespeichert",
+    "saveAndImport": "Speichern und importieren",
+    "importingAccounts": "Die ausgewählten Konten und ihr Verlauf werden importiert. Das kann eine Minute dauern.",
+    "notImportedCount": "Nicht importierte Konten: {{count}}",
+    "accountState": {
+      "imported": "Importiert",
+      "willImport": "Wird mit Verlauf importiert",
+      "notImported": "Nicht importiert",
+      "willStop": "Wird nicht mehr synchronisiert",
+      "historyKept": "Nicht synchronisiert · Verlauf behalten"
+    }
   },
   "settings": {
     "rules": "Regeln",

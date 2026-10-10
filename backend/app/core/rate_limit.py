@@ -60,3 +60,5 @@ class RateLimiter:
 login_rate_limit = RateLimiter(max_requests=5, window_seconds=60)
 register_rate_limit = RateLimiter(max_requests=3, window_seconds=3600)
 password_reset_rate_limit = RateLimiter(max_requests=3, window_seconds=3600)
+# Clients refresh in the background; this only stops guessing at volume.
+refresh_rate_limit = RateLimiter(max_requests=30, window_seconds=60)

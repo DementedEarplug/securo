@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
+import type { BankConnection } from '@/types'
 
 interface TokenConnectDialogProps {
   open: boolean
@@ -21,6 +22,9 @@ interface TokenConnectDialogProps {
   provider: string
   supportsAssetSync?: boolean
   reconnectConnectionId?: string
+  // A new link imports nothing until its accounts are chosen; the caller
+  // opens the account picker for it.
+  onLinked?: (connection: BankConnection) => void
 }
 
 const PROVIDER_BRIDGE_URLS: Record<string, string> = {
@@ -33,6 +37,7 @@ export function TokenConnectDialog({
   provider,
   supportsAssetSync = false,
   reconnectConnectionId,
+  onLinked,
 }: TokenConnectDialogProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -56,17 +61,22 @@ export function TokenConnectDialog({
     if (!token.trim()) return
     setSubmitting(true)
     try {
-      await connections.handleCallback(
+      // One SimpleFIN login often covers a whole household, so a new link
+      // imports nothing until the accounts for this workspace are chosen.
+      const connection = await connections.handleCallback(
         token.trim(),
         provider,
         undefined,
-        supportsAssetSync && !isReconnect ? { sync_assets: syncAssets } : undefined,
+        isReconnect
+          ? undefined
+          : { ...(supportsAssetSync ? { sync_assets: syncAssets } : {}), select_accounts: true },
         reconnectConnectionId,
       )
       invalidateFinancialQueries(queryClient)
       queryClient.invalidateQueries({ queryKey: ['connections'] })
       toast.success(t(isReconnect ? 'accounts.reconnected' : 'accounts.connected'))
       onClose()
+      if (!isReconnect) onLinked?.(connection)
     } catch (err) {
       const detail =
         axios.isAxiosError(err) && err.response?.data?.detail

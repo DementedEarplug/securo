@@ -1,0 +1,28 @@
+{
+  "newTitle": "Nova transação recorrente",
+  "editTitle": "Editar transação recorrente",
+  "emptyTitle": "Nenhuma transação recorrente",
+  "emptyBody": "Adicione contas e receitas que se repetem, como aluguel ou salário, para vê-las chegando.",
+  "generate": "Lançar as que venceram",
+  "generatedTitle": "Pronto",
+  "generatedBody_one": "{{count}} transação foi lançada.",
+  "generatedBody_other": "{{count}} transações foram lançadas.",
+  "next": "Próxima {{date}}",
+  "paused": "Pausada",
+  "pausedSection": "Pausadas",
+  "startDate": "Começa em",
+  "dayOfMonth": "Dia do mês",
+  "dayOfMonthPlaceholder": "Mesmo dia da data de início",
+  "noEnd": "Sem fim",
+  "weekend": "Se cair no fim de semana",
+  "weekendOptions": {
+    "none": "Manter a data",
+    "previous_friday": "Sexta anterior",
+    "next_monday": "Segunda seguinte"
+  },
+  "autoGenerate": "Lançar transações automaticamente",
+  "autoGenerateHint": "Desligado: aparece só como previsão e para conciliar com o banco.",
+  "active": "Ativa",
+  "deleteTitle": "Excluir esta transação recorrente?",
+  "deleteBody": "As transações que ela já lançou continuam."
+}

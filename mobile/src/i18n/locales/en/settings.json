@@ -1,0 +1,24 @@
+{
+  "title": "Settings",
+  "signedInAs": "Signed in as",
+  "server": "Server",
+  "workspace": "Workspace",
+  "language": "Language",
+  "languageAuto": "Same as my Securo account",
+  "languages": {
+    "en": "English",
+    "pt-BR": "Português (Brasil)"
+  },
+  "devices": "Signed-in devices",
+  "devicesHint": "Phones that stay signed in",
+  "devicesIntro": "These devices stay signed in without a password. Revoke one you no longer use or don't recognise. Changing your password signs them all out.",
+  "devicesEmpty": "No devices are signed in.",
+  "unknownDevice": "Unknown device",
+  "lastActive": "Last active {{date}}",
+  "revoke": "Revoke",
+  "revokeTitle": "Revoke access?",
+  "revokeBody": "{{name}} will have to sign in again.",
+  "signOut": "Sign out",
+  "signOutTitle": "Sign out?",
+  "signOutBody": "You will need your password to sign in again on this phone."
+}
