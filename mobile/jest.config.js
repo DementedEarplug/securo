@@ -8,4 +8,7 @@ module.exports = {
     '^lucide-react-native/icons/(.*)$': '<rootDir>/node_modules/lucide-react-native/dist/cjs/icons/$1.js',
   },
   testPathIgnorePatterns: ['/node_modules/', '/android/', '/ios/'],
+  // The first test of a screen pays for transforming the screen and its chart
+  // libraries; on a cold CI runner that alone can pass Jest's 5 s default.
+  testTimeout: 20000,
 }
