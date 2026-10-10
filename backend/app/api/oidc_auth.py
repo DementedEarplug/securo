@@ -1,12 +1,15 @@
 import base64
 import hashlib
+import hmac
 import json
+import re
 import secrets
+import uuid
 from typing import Any
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse
 from fastapi_users import schemas
 from fastapi_users.exceptions import UserAlreadyExists
@@ -18,23 +21,54 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import UserManager, get_jwt_strategy, get_user_manager
 from app.core.config import get_settings
 from app.core.database import get_async_session
+from app.core.rate_limit import login_rate_limit
 from app.core.redis import get_redis
 from app.models.account import Account
 from app.models.user import User
 from app.models.workspace import WORKSPACE_ROLES, Workspace, WorkspaceMember
+from app.schemas.auth import TokenResponse
 from app.services import admin_service
 from app.services.category_service import create_default_categories
+from app.services.refresh_token_service import build_token_response
 from app.services.rule_service import create_default_rules
 from app.services.workspace_service import create_personal_workspace_for_user
 
 router = APIRouter(prefix="/api/auth/oidc", tags=["auth"])
 OIDC_STATE_TTL = 600
+# A native app's one-time code only has to survive the hop from the browser
+# back into the app, which takes a second or two.
+OIDC_APP_CODE_TTL = 60
+# RFC 7636: S256 challenges are 43 base64url characters; verifiers are 43-128
+# characters of the unreserved set.
+_CODE_CHALLENGE_RE = re.compile(r"^[A-Za-z0-9_-]{43}$")
+_CODE_VERIFIER_RE = re.compile(r"^[A-Za-z0-9._~-]{43,128}$")
 
 
 class OIDCConfigResponse(BaseModel):
     enabled: bool
     provider_name: str = "OIDC"
     local_auth_enabled: bool = True
+    # Redirect URIs native apps may use with `app_redirect`; empty when the
+    # native flow is off.
+    native_redirect_uris: list[str] = []
+
+
+class OIDCExchangeRequest(BaseModel):
+    code: str
+    code_verifier: str
+
+
+def _s256(verifier: str) -> str:
+    return base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
+
+
+def _app_code_key(code: str) -> str:
+    # Stored hashed, like refresh tokens: a Redis dump doesn't hand out logins.
+    return f"oidc_app_code:{hashlib.sha256(code.encode()).hexdigest()}"
+
+
+def _with_query(uri: str, params: dict[str, str]) -> str:
+    return f"{uri}{'&' if '?' in uri else '?'}{urlencode(params)}"
 
 
 async def _discover() -> dict[str, Any]:
@@ -61,12 +95,28 @@ async def oidc_config():
         enabled=settings.oidc_login_available,
         provider_name=settings.oidc_provider_name or "OIDC",
         local_auth_enabled=settings.local_auth_enabled,
+        native_redirect_uris=settings.oidc_native_redirect_uri_list if settings.oidc_login_available else [],
     )
 
 
 @router.get("/login")
-async def oidc_login():
+async def oidc_login(
+    app_redirect: str | None = Query(
+        None, description="Native apps: where to return with a one-time code (must be allow-listed)"
+    ),
+    app_code_challenge: str | None = Query(None, description="Native apps: PKCE S256 challenge"),
+    app_code_challenge_method: str = Query("S256"),
+):
     settings = get_settings()
+    if app_redirect is not None or app_code_challenge is not None:
+        # Exact match only: a prefix or pattern would let a look-alike URI
+        # receive the code. The PKCE challenge binds the code to the app.
+        if app_redirect is None or app_redirect not in settings.oidc_native_redirect_uri_list:
+            raise HTTPException(status_code=400, detail="app_redirect is not an allowed redirect URI")
+        if app_code_challenge_method != "S256":
+            raise HTTPException(status_code=400, detail="Only the S256 code challenge method is supported")
+        if app_code_challenge is None or not _CODE_CHALLENGE_RE.fullmatch(app_code_challenge):
+            raise HTTPException(status_code=400, detail="app_code_challenge must be an S256 challenge")
     if not settings.oidc_client_id:
         raise HTTPException(status_code=500, detail="OIDC_CLIENT_ID is required")
     discovery = await _discover()
@@ -77,15 +127,13 @@ async def oidc_login():
     state = secrets.token_urlsafe(32)
     nonce = secrets.token_urlsafe(32)
     code_verifier = secrets.token_urlsafe(64)
-    code_challenge = base64.urlsafe_b64encode(
-        hashlib.sha256(code_verifier.encode()).digest()
-    ).rstrip(b"=").decode()
+    code_challenge = _s256(code_verifier)
+    state_data = {"nonce": nonce, "code_verifier": code_verifier}
+    if app_redirect is not None:
+        state_data["app_redirect"] = app_redirect
+        state_data["app_code_challenge"] = app_code_challenge
     r = await get_redis()
-    await r.set(
-        f"oidc_state:{state}",
-        json.dumps({"nonce": nonce, "code_verifier": code_verifier}),
-        ex=OIDC_STATE_TTL,
-    )
+    await r.set(f"oidc_state:{state}", json.dumps(state_data), ex=OIDC_STATE_TTL)
 
     params = {
         "client_id": settings.oidc_client_id,
@@ -359,23 +407,9 @@ async def _get_or_create_oidc_user(
     return user
 
 
-@router.get("/callback")
-async def oidc_callback(
-    code: str = Query(...),
-    state: str = Query(...),
-    session: AsyncSession = Depends(get_async_session),
-    user_manager: UserManager = Depends(get_user_manager),
-):
-    r = await get_redis()
-    state_key = f"oidc_state:{state}"
-    raw_state = await r.get(state_key)
-    if raw_state is None:
-        raise HTTPException(status_code=400, detail="Invalid or expired OIDC state")
-    await r.delete(state_key)
-    if isinstance(raw_state, bytes):
-        raw_state = raw_state.decode()
-    state_data = json.loads(raw_state)
-
+async def _authenticate_callback(
+    code: str, state_data: dict[str, Any], session: AsyncSession, user_manager: UserManager
+) -> User:
     discovery = await _discover()
     token_response = await _exchange_code(discovery, code, state_data.get("code_verifier", ""))
     id_token = token_response.get("id_token")
@@ -388,6 +422,108 @@ async def oidc_callback(
     user = await _get_or_create_oidc_user(claims, userinfo, discovery.get("issuer", ""), session, user_manager)
     if not user.is_active:
         raise HTTPException(status_code=403, detail="User is inactive")
+    return user
+
+
+async def _native_callback(
+    code: str | None,
+    error: str | None,
+    state_data: dict[str, Any],
+    session: AsyncSession,
+    user_manager: UserManager,
+) -> RedirectResponse:
+    """Finish a native app's sign-in: hand it a one-time code, never a token.
+
+    The browser lands on the app's redirect URI, which another app could also
+    claim; the code is useless without the verifier only the real app holds.
+    """
+    app_redirect = state_data["app_redirect"]
+    # The allow-list is checked again: it may have changed since /login.
+    if app_redirect not in get_settings().oidc_native_redirect_uri_list:
+        raise HTTPException(status_code=400, detail="app_redirect is not an allowed redirect URI")
+    if code is None:
+        return RedirectResponse(_with_query(app_redirect, {"error": error or "access_denied"}))
+    try:
+        user = await _authenticate_callback(code, state_data, session, user_manager)
+    except HTTPException as exc:
+        if exc.status_code >= 500:
+            raise
+        return RedirectResponse(
+            _with_query(app_redirect, {"error": "access_denied", "error_description": str(exc.detail)})
+        )
+    except httpx.HTTPError:
+        return RedirectResponse(_with_query(app_redirect, {"error": "server_error"}))
+
+    app_code = secrets.token_urlsafe(32)
+    r = await get_redis()
+    await r.set(
+        _app_code_key(app_code),
+        json.dumps({"user_id": str(user.id), "code_challenge": state_data["app_code_challenge"]}),
+        ex=OIDC_APP_CODE_TTL,
+    )
+    return RedirectResponse(_with_query(app_redirect, {"code": app_code}))
+
+
+@router.get("/callback")
+async def oidc_callback(
+    state: str = Query(...),
+    code: str | None = Query(None),
+    error: str | None = Query(None),
+    session: AsyncSession = Depends(get_async_session),
+    user_manager: UserManager = Depends(get_user_manager),
+):
+    r = await get_redis()
+    state_key = f"oidc_state:{state}"
+    raw_state = await r.get(state_key)
+    if raw_state is None:
+        raise HTTPException(status_code=400, detail="Invalid or expired OIDC state")
+    if isinstance(raw_state, bytes):
+        raw_state = raw_state.decode()
+    state_data = json.loads(raw_state)
+
+    if state_data.get("app_redirect"):
+        await r.delete(state_key)
+        return await _native_callback(code, error, state_data, session, user_manager)
+
+    if code is None:
+        # The web flow has always required `code` here; keep its answer.
+        raise HTTPException(status_code=422, detail="Missing OIDC authorization code")
+    await r.delete(state_key)
+
+    user = await _authenticate_callback(code, state_data, session, user_manager)
     token = await get_jwt_strategy().write_token(user)
     frontend_url = get_settings().frontend_url.rstrip("/")
     return RedirectResponse(f"{frontend_url}/auth/oidc/callback#access_token={token}&token_type=bearer")
+
+
+@router.post("/exchange", response_model=TokenResponse, dependencies=[Depends(login_rate_limit)])
+async def oidc_exchange(
+    body: OIDCExchangeRequest,
+    request: Request,
+    session: AsyncSession = Depends(get_async_session),
+):
+    """Trade a native app's one-time code and PKCE verifier for a session.
+
+    The code is consumed before the verifier is checked, so a wrong guess
+    burns it: each code allows exactly one attempt.
+    """
+    settings = get_settings()
+    if not settings.oidc_login_available or not settings.oidc_native_redirect_uri_list:
+        raise HTTPException(status_code=404, detail="OIDC sign-in for apps is not enabled")
+    if not _CODE_VERIFIER_RE.fullmatch(body.code_verifier):
+        raise HTTPException(status_code=400, detail="Invalid code_verifier")
+
+    r = await get_redis()
+    raw = await r.getdel(_app_code_key(body.code))
+    if raw is None:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+    if isinstance(raw, bytes):
+        raw = raw.decode()
+    data = json.loads(raw)
+    if not hmac.compare_digest(_s256(body.code_verifier), data["code_challenge"]):
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+
+    user = await session.get(User, uuid.UUID(data["user_id"]))
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+    return await build_token_response(session, user, remember=True, request=request)

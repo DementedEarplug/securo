@@ -1371,7 +1371,30 @@
     "syncAssetsHint": "Gdy wyłączone, to połączenie synchronizuje konta i transakcje, ale nie zmienia inwestycji dostawcy.",
     "initialSyncSettings": "Opcje synchronizacji",
     "initialSyncSettingsDesc": "Wybierz, co Securo ma zaimportować przed otwarciem konektora.",
-    "continueToConnector": "Przejdź do konektora"
+    "continueToConnector": "Przejdź do konektora",
+    "chooseAccounts": "Wybierz konta",
+    "chooseAccountsIntro": "Importowane i synchronizowane są tylko zaznaczone konta. Niezaznaczone konta nigdy nie trafiają do tej przestrzeni roboczej.",
+    "awaitingSelection": "Wybierz konta do zaimportowania. Nic nie zostanie zaimportowane, dopóki tego nie zrobisz.",
+    "selectAll": "Zaznacz wszystkie",
+    "clearAll": "Wyczyść",
+    "transactionCount": "Transakcje: {{count}}",
+    "importNewAccounts": "Automatycznie importuj nowe konta",
+    "importNewAccountsHint": "Gdy odznaczone, konta, które pojawią się później w banku, czekają tutaj, aż je zaznaczysz.",
+    "historyTitle": "Zachować zaimportowaną historię?",
+    "historyBody": "{{names}} przestanie się synchronizować. Usunąć już zaimportowane transakcje ({{count}}) czy zachować je w tej przestrzeni roboczej bez aktualizacji?",
+    "keepHistory": "Zachowaj historię",
+    "deleteHistory": "Usuń historię",
+    "accountsSaved": "Konta zapisane",
+    "saveAndImport": "Zapisz i importuj",
+    "importingAccounts": "Importowanie wybranych kont i ich historii. Może to potrwać minutę.",
+    "notImportedCount": "Niezaimportowane konta: {{count}}",
+    "accountState": {
+      "imported": "Zaimportowane",
+      "willImport": "Zostanie zaimportowane z historią",
+      "notImported": "Niezaimportowane",
+      "willStop": "Przestanie się synchronizować",
+      "historyKept": "Bez synchronizacji · historia zachowana"
+    }
   },
   "settings": {
     "rules": "Reguły",

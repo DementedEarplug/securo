@@ -1,0 +1,95 @@
+{
+  "tabs": {
+    "users": "Usuários",
+    "settings": "Configurações"
+  },
+  "users": {
+    "search": "Buscar",
+    "searchPlaceholder": "Endereço de e-mail",
+    "add": "Adicionar usuário",
+    "edit": "Editar usuário",
+    "addDesc": "Crie uma conta que pode entrar neste servidor Securo.",
+    "ssoOnly": "Este servidor só permite login único (SSO), então os usuários são adicionados pelo seu provedor de identidade.",
+    "empty": "Nenhum usuário encontrado.",
+    "showing": "Mostrando {{shown}} de {{total}} usuários. Busque para filtrar a lista.",
+    "admin": "Admin",
+    "user": "Usuário",
+    "inactive": "Inativo",
+    "you": "Você",
+    "email": "E-mail",
+    "password": "Senha",
+    "newPassword": "Nova senha",
+    "resetPassword": "Redefinir senha",
+    "resetPasswordPlaceholder": "Deixe em branco para manter a atual",
+    "language": "Idioma",
+    "currency": "Moeda de exibição",
+    "active": "Ativo",
+    "activeHint": "Usuários inativos não conseguem entrar. Os dados deles são mantidos.",
+    "adminRole": "Administrador",
+    "adminRoleHint": "Administradores gerenciam usuários e estas configurações do servidor.",
+    "selfLocked": "Você não pode alterar isto na sua própria conta.",
+    "delete": "Excluir usuário",
+    "deleteTitle": "Excluir usuário?",
+    "deleteBody": "Isso exclui permanentemente {{email}} e todos os seus dados. Não é possível desfazer.",
+    "errors": {
+      "email": "Informe um e-mail válido.",
+      "passwordShort": "Use pelo menos {{min}} caracteres.",
+      "passwordLong": "Use no máximo {{max}} caracteres."
+    }
+  },
+  "settings": {
+    "registrationTitle": "Registro",
+    "registration": "Permitir registro de usuários",
+    "registrationDesc": "Quando desativado, apenas admins podem criar novas contas.",
+    "accountingTitle": "Contabilidade",
+    "accountingSubtitle": "Como as transações de cartão de crédito entram no painel, relatórios e orçamentos.",
+    "accounting": {
+      "cash": "Regime de caixa",
+      "accrual": "Regime de competência",
+      "cashDesc": "Compras no cartão contam no dia em que acontecem (padrão).",
+      "accrualDesc": "Compras no cartão contam na data de vencimento da fatura, o que reflete o fluxo de caixa real."
+    },
+    "providerCategoriesTitle": "Categorias",
+    "providerCategories": "Usar categorias da integração",
+    "providerCategoriesDesc": "Quando desativado, as transações sincronizadas chegam sem categoria e apenas suas regras se aplicam.",
+    "formatsTitle": "Formato de número e data",
+    "numberFormat": "Formato de número",
+    "numberFormatDesc": "Como os valores são exibidos no app para todos.",
+    "numberFormats": {
+      "auto": "Automático",
+      "comma_dot": "1,000.00",
+      "dot_comma": "1.000,00",
+      "space_comma": "1 000,00"
+    },
+    "numberFormatHints": {
+      "auto": "Segue a convenção de cada moeda, como €1.000,00 ou $1,000.00.",
+      "comma_dot": "Milhar com vírgula, decimal com ponto",
+      "dot_comma": "Milhar com ponto, decimal com vírgula",
+      "space_comma": "Milhar com espaço, decimal com vírgula"
+    },
+    "dateFormat": "Formato de data",
+    "dateFormatDesc": "Como as datas são exibidas. Os nomes dos meses sempre seguem o idioma de cada usuário.",
+    "dateFormats": {
+      "auto": "Automático",
+      "dmy": "Dia / Mês / Ano",
+      "mdy": "Mês / Dia / Ano",
+      "ymd": "Ano / Mês / Dia"
+    },
+    "dateFormatHints": {
+      "auto": "Acompanha o formato de número (dia primeiro na Europa, mês primeiro nos EUA).",
+      "dmy": "Dia primeiro, ex.: 04/06/2026.",
+      "mdy": "Mês primeiro, ex.: 06/04/2026.",
+      "ymd": "Ordem ISO, ex.: 2026-06-04."
+    },
+    "timezoneTitle": "Data e hora",
+    "timezone": "Fuso horário do aplicativo",
+    "timezoneHelp": "Datas, transações recorrentes, tarefas agendadas e o contexto da IA usam este fuso horário. As alterações valem para novas solicitações e tarefas.",
+    "timezoneServerDefault": "Padrão do servidor ({{zone}})",
+    "timezoneSavedInvalid": "O valor salvo {{value}} não é um fuso horário que este servidor conhece. {{zone}} está em uso até que ele seja alterado.",
+    "colorsTitle": "Cores do tema web",
+    "colorsDesc": "As cores de destaque do app web. O app móvel mantém a própria paleta.",
+    "lightMode": "Modo claro",
+    "darkMode": "Modo escuro",
+    "colorInvalid": "Use uma cor hexadecimal como #4F46E5."
+  }
+}

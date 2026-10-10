@@ -193,7 +193,9 @@ async def test_authenticate_passkey_returns_jwt_and_bypasses_2fa(
     assert isinstance(passkey.last_used_at, datetime)
 
 
-async def _authenticate_with_stored_passkey(client: AsyncClient, passkey: UserPasskey):
+async def _authenticate_with_stored_passkey(
+    client: AsyncClient, passkey: UserPasskey, *, query: str = ""
+):
     options_response = await client.post("/api/auth/passkeys/authenticate/options", json={})
     challenge_id = options_response.json()["challenge_id"]
     verification = SimpleNamespace(
@@ -204,7 +206,7 @@ async def _authenticate_with_stored_passkey(client: AsyncClient, passkey: UserPa
         "app.api.passkeys.verify_authentication_response", return_value=verification
     ) as verify_mock:
         verify_response = await client.post(
-            "/api/auth/passkeys/authenticate/verify",
+            "/api/auth/passkeys/authenticate/verify" + query,
             json={
                 "challenge_id": challenge_id,
                 "credential": {
@@ -222,6 +224,7 @@ async def _authenticate_with_stored_passkey(client: AsyncClient, passkey: UserPa
             },
         )
     assert verify_response.status_code == 200
+    verify_mock.response = verify_response
     return verify_mock
 
 
@@ -832,4 +835,94 @@ async def test_register_verify_uses_the_origin_the_challenge_was_issued_for(
     assert response.status_code == 200
     kwargs = verify_mock.call_args.kwargs
     assert kwargs["expected_rp_id"] == "money.example.com"
-    assert kwargs["expected_origin"] == "https://money.example.com"
+    # A list since the Android app was added; just the browser when it is not configured.
+    assert kwargs["expected_origin"] == ["https://money.example.com"]
+
+
+def _stored_passkey(user_id, credential_id: str, name: str) -> UserPasskey:
+    return UserPasskey(
+        user_id=user_id,
+        credential_id=credential_id,
+        public_key=credential_id + "LXB1YmxpYw",
+        sign_count=0,
+        name=name,
+        backed_up=True,
+    )
+
+
+async def test_passkey_sign_in_with_remember_returns_refresh_token(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user,
+):
+    passkey = _stored_passkey(test_user.id, "cmVtZW1iZXItbWUta2V5", "Phone")
+    session.add(passkey)
+    await session.commit()
+    await session.refresh(passkey)
+
+    verify_mock = await _authenticate_with_stored_passkey(client, passkey, query="?remember=true")
+
+    data = verify_mock.response.json()
+    assert data["access_token"]
+    assert data["refresh_token"]
+
+
+async def test_passkey_sign_in_without_remember_keeps_the_web_payload(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user,
+):
+    passkey = _stored_passkey(test_user.id, "d2ViLW9ubHkta2V5", "Laptop")
+    session.add(passkey)
+    await session.commit()
+    await session.refresh(passkey)
+
+    verify_mock = await _authenticate_with_stored_passkey(client, passkey)
+
+    assert set(verify_mock.response.json()) == {"access_token", "token_type"}
+
+
+ANDROID_FINGERPRINT = "14:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5"
+ANDROID_ORIGIN = "android:apk-key-hash:FG3pg8VzBlDY7rmVLzT8ZBagg0LmHb6oigSWsj_PROU"
+
+
+@pytest.fixture
+def android_app():
+    from app.core.config import get_settings
+
+    settings = get_settings()
+    previous = (settings.webauthn_android_package_name, settings.webauthn_android_cert_fingerprints)
+    settings.webauthn_android_package_name = "com.usesecuro.app"
+    settings.webauthn_android_cert_fingerprints = ANDROID_FINGERPRINT
+    yield settings
+    settings.webauthn_android_package_name, settings.webauthn_android_cert_fingerprints = previous
+
+
+def test_android_origin_is_the_base64url_certificate_hash(android_app):
+    from app.core.webauthn import android_origins
+
+    assert android_origins() == [ANDROID_ORIGIN]
+
+
+def test_no_android_origin_without_configuration():
+    from app.core.webauthn import android_origins, expected_origins
+
+    assert android_origins() == []
+    assert expected_origins("https://securo.test") == ["https://securo.test"]
+
+
+async def test_passkey_sign_in_accepts_the_android_app_origin(
+    client: AsyncClient,
+    session: AsyncSession,
+    test_user,
+    android_app,
+):
+    passkey = _stored_passkey(test_user.id, "YW5kcm9pZC1rZXkx", "Pixel")
+    session.add(passkey)
+    await session.commit()
+    await session.refresh(passkey)
+
+    verify_mock = await _authenticate_with_stored_passkey(client, passkey, query="?remember=true")
+
+    assert verify_mock.call_args.kwargs["expected_origin"] == [BROWSER_ORIGIN, ANDROID_ORIGIN]
+    assert verify_mock.response.json()["refresh_token"]

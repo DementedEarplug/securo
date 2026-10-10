@@ -12,6 +12,53 @@ CREDENTIALS_DIRECTORY: list[Path] = [
 ]
 
 
+def parse_cert_fingerprints(raw: str) -> list[str]:
+    """SHA-256 certificate fingerprints, comma-separated, normalized to AA:BB:...
+
+    Accepts the colon-separated form `keytool -list -v` prints, or bare hex.
+    """
+    fingerprints = []
+    for item in raw.split(","):
+        hex_digits = item.strip().replace(":", "").upper()
+        if not hex_digits:
+            continue
+        if len(hex_digits) != 64 or any(c not in "0123456789ABCDEF" for c in hex_digits):
+            raise ValueError(f"not a SHA-256 certificate fingerprint: {item.strip()!r}")
+        fingerprints.append(":".join(hex_digits[i : i + 2] for i in range(0, 64, 2)))
+    return fingerprints
+
+
+_URI_SCHEME_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789+.-"
+
+
+def parse_native_redirect_uris(raw: str) -> list[str]:
+    """Exact redirect URIs a native app may ask the OIDC callback to return to.
+
+    Comma-separated. Each must be an absolute URI (`securo://oidc`); fragments
+    and whitespace are rejected because the code is appended as a query string.
+    """
+    uris = []
+    for item in raw.split(","):
+        uri = item.strip()
+        if not uri:
+            continue
+        scheme, sep, rest = uri.partition(":")
+        if (
+            not sep
+            or not rest
+            or not scheme
+            or not scheme[0].isalpha()
+            or any(c not in _URI_SCHEME_CHARS for c in scheme.lower())
+            or "#" in uri
+            or any(c.isspace() for c in uri)
+        ):
+            raise ValueError(f"not an absolute redirect URI without a fragment: {uri!r}")
+        if scheme.lower() in {"javascript", "data", "file", "vbscript"}:
+            raise ValueError(f"unsafe redirect URI scheme: {uri!r}")
+        uris.append(uri)
+    return uris
+
+
 class Settings(BaseSettings):
     # App
     app_name: str = "Securo"
@@ -25,6 +72,9 @@ class Settings(BaseSettings):
     local_auth_enabled: bool = True
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24  # 24 hours
+    # Lifetime of the refresh tokens issued to clients that ask to stay signed
+    # in (the mobile app). Each refresh rotates the token and restarts the clock.
+    refresh_token_expire_days: int = 30
 
     # Pluggy
     pluggy_client_id: str = ""
@@ -63,6 +113,14 @@ class Settings(BaseSettings):
     # app is reached at exactly one origin and you want it enforced.
     webauthn_origin: str = ""
     webauthn_challenge_ttl_seconds: int = 300
+    # The Android app. Credential Manager signs passkey ceremonies with an
+    # `android:apk-key-hash:` origin derived from the app's signing certificate,
+    # and only offers the site's passkeys when this server vouches for the app
+    # in /.well-known/assetlinks.json. Both come from these two settings; empty
+    # means the app cannot use passkeys here. Fingerprints are the SHA-256 lines
+    # `keytool -list -v` prints (AA:BB:...), comma-separated for several builds.
+    webauthn_android_package_name: str = ""
+    webauthn_android_cert_fingerprints: str = ""
 
     # Defaults
     default_currency: str = "USD"  # fallback currency when user preference is unavailable
@@ -110,6 +168,9 @@ class Settings(BaseSettings):
     oidc_roles_claim: str = "groups"
     oidc_admin_roles: str = ""  # comma-separated provider roles/groups that grant Securo admin
     oidc_workspace_role_map: str = ""  # JSON: {"provider-role": "owner|editor|viewer"}
+    # Native apps (the Android client) sign in through the system browser and
+    # come back on one of these exact URIs with a one-time code. Empty = off.
+    oidc_native_redirect_uris: str = ""  # e.g. securo://oidc
 
     # Celery
     redis_url: str = "redis://localhost:6379/0"
@@ -142,6 +203,18 @@ class Settings(BaseSettings):
     def oidc_login_available(self) -> bool:
         return bool(self.oidc_enabled and self.oidc_client_id and self.oidc_discovery_url)
 
+    @property
+    def oidc_native_redirect_uri_list(self) -> list[str]:
+        return parse_native_redirect_uris(self.oidc_native_redirect_uris)
+
+    @model_validator(mode="after")
+    def validate_oidc_native_redirect_uris(self) -> "Settings":
+        try:
+            parse_native_redirect_uris(self.oidc_native_redirect_uris)
+        except ValueError as exc:
+            raise ValueError(f"OIDC_NATIVE_REDIRECT_URIS: {exc}") from None
+        return self
+
     @model_validator(mode="after")
     def validate_auth_settings(self) -> "Settings":
         if not self.local_auth_enabled and not self.oidc_login_available:
@@ -155,6 +228,19 @@ class Settings(BaseSettings):
             raise ValueError(
                 "LOCAL_AUTH_ENABLED=false requires a complete OIDC configuration; "
                 f"missing: {', '.join(missing)}"
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_android_passkeys(self) -> "Settings":
+        try:
+            fingerprints = parse_cert_fingerprints(self.webauthn_android_cert_fingerprints)
+        except ValueError as exc:
+            raise ValueError(f"WEBAUTHN_ANDROID_CERT_FINGERPRINTS: {exc}") from None
+        if bool(fingerprints) != bool(self.webauthn_android_package_name.strip()):
+            raise ValueError(
+                "WEBAUTHN_ANDROID_PACKAGE_NAME and WEBAUTHN_ANDROID_CERT_FINGERPRINTS "
+                "are only useful together; set both or neither"
             )
         return self
 

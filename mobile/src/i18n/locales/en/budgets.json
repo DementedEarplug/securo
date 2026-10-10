@@ -1,0 +1,22 @@
+{
+  "title": "Budgets",
+  "previousMonth": "Previous month",
+  "nextMonth": "Next month",
+  "spentOfBudget": "Spent of budget",
+  "unbudgeted": "Spent outside budgets",
+  "emptyTitle": "No budgets this month",
+  "emptyBody": "Tap + to set a monthly budget for a category.",
+  "form": {
+    "newTitle": "Set a budget",
+    "editTitle": "Edit budget",
+    "chooseCategory": "Choose a category",
+    "categoryRequired": "Choose a category.",
+    "repeat": "Repeat every month",
+    "repeatHint": "Off: only for this month.",
+    "fromThisMonth": "Only from this month on",
+    "fromThisMonthHint": "Earlier months keep the old amount. Off: change every month.",
+    "deleteTitle": "Remove this budget?",
+    "deleteBody": "The category will have no budget this month.",
+    "deleteRecurringBody": "The category will have no budget in any month this recurring budget covered."
+  }
+}

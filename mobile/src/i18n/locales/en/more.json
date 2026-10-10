@@ -1,0 +1,29 @@
+{
+  "title": "More",
+  "sections": {
+    "banking": "Banking",
+    "organize": "Organize",
+    "plan": "Plan",
+    "wealth": "Wealth & business",
+    "data": "Data",
+    "admin": "Administration",
+    "app": "App"
+  },
+  "items": {
+    "connections": "Bank connections",
+    "import": "Import statement",
+    "importLogs": "Import history",
+    "categories": "Categories",
+    "rules": "Rules",
+    "payees": "Payees",
+    "recurring": "Recurring transactions",
+    "goals": "Goals",
+    "groups": "Split groups",
+    "assets": "Assets & investments",
+    "invoices": "Invoices",
+    "export": "Export & backup",
+    "agents": "AI assistant",
+    "admin": "Administration",
+    "settings": "Settings"
+  }
+}

@@ -10,6 +10,11 @@ x-podman:
 x-backend-env: &backend-env
   DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/securo
   SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
+  # How long the mobile app stays signed in without a password (days).
+  REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-30}
+  # Lets the Android app use passkeys on this server (see README → Passkeys).
+  WEBAUTHN_ANDROID_PACKAGE_NAME: ${WEBAUTHN_ANDROID_PACKAGE_NAME:-}
+  WEBAUTHN_ANDROID_CERT_FINGERPRINTS: ${WEBAUTHN_ANDROID_CERT_FINGERPRINTS:-}
   DEBUG: ${DEBUG:-false}
   FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
   PLUGGY_CLIENT_ID: ${PLUGGY_CLIENT_ID:-}
@@ -35,6 +40,7 @@ x-backend-env: &backend-env
   OIDC_ROLES_CLAIM: ${OIDC_ROLES_CLAIM:-groups}
   OIDC_ADMIN_ROLES: ${OIDC_ADMIN_ROLES:-}
   OIDC_WORKSPACE_ROLE_MAP: ${OIDC_WORKSPACE_ROLE_MAP:-}
+  OIDC_NATIVE_REDIRECT_URIS: ${OIDC_NATIVE_REDIRECT_URIS:-}
   LOCAL_AUTH_ENABLED: ${LOCAL_AUTH_ENABLED:-true}
   OPENEXCHANGERATES_APP_ID: ${OPENEXCHANGERATES_APP_ID:-}
   FX_SYNC_MODE: ${FX_SYNC_MODE:-on_demand}

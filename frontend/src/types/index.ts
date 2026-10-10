@@ -153,6 +153,31 @@ export interface ConnectionSettings {
   payee_source?: 'auto' | 'merchant' | 'payment_data' | 'description' | 'none'
   import_pending?: boolean
   sync_assets?: boolean
+  // Linked with account selection; nothing is imported until accounts are chosen.
+  awaiting_account_selection?: boolean
+  excluded_accounts?: string[]
+}
+
+// An account a connection can import, whether or not it is imported.
+export interface ConnectionAccount {
+  external_id: string
+  name: string
+  type: string
+  currency: string
+  balance: string | null
+  masked_number: string | null
+  institution_name: string | null
+  included: boolean
+  // The imported account; set on an excluded account whose history was kept.
+  account_id: string | null
+  transaction_count: number
+  is_closed: boolean
+}
+
+export interface ConnectionAccounts {
+  accounts: ConnectionAccount[]
+  import_new_accounts: boolean
+  awaiting_selection: boolean
 }
 
 export interface Account {

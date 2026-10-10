@@ -12,6 +12,7 @@ import type {
   CategoryUsage,
   CategoryGroup,
   BankConnection,
+  ConnectionAccounts,
   ConnectionSettings,
   Account,
   AccountSummary,
@@ -412,7 +413,7 @@ export const connections = {
     code: string,
     provider: string,
     state?: string,
-    settings?: Pick<ConnectionSettings, 'sync_assets'>,
+    settings?: Pick<ConnectionSettings, 'sync_assets'> & { select_accounts?: boolean },
     reconnectConnectionId?: string,
   ): Promise<BankConnection> => {
     const { data } = await api.post('/connections/oauth/callback', {
@@ -422,6 +423,18 @@ export const connections = {
       reconnect_connection_id: reconnectConnectionId,
       ...settings,
     })
+    return data
+  },
+  getAccounts: async (id: string): Promise<ConnectionAccounts> => {
+    const { data } = await api.get(`/connections/${id}/accounts`)
+    return data
+  },
+  // Imports newly chosen accounts with their history before answering.
+  updateAccounts: async (
+    id: string,
+    body: { excluded: string[]; import_new_accounts: boolean; remove_history: string[] },
+  ): Promise<BankConnection> => {
+    const { data } = await api.put(`/connections/${id}/accounts`, body)
     return data
   },
   getReauthUrl: async (connectionId: string): Promise<string> => {

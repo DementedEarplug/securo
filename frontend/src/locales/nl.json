@@ -1320,7 +1320,30 @@
     "syncAssetsHint": "Indien uitgeschakeld, synchroniseert deze verbinding accounts en transacties, maar laat de investeringen van de provider onaangeroerd.",
     "initialSyncSettings": "Synchronisatie-opties",
     "initialSyncSettingsDesc": "Kies wat Securo moet importeren voordat u de connector opent.",
-    "continueToConnector": "Ga verder naar de connector"
+    "continueToConnector": "Ga verder naar de connector",
+    "chooseAccounts": "Rekeningen kiezen",
+    "chooseAccountsIntro": "Alleen aangevinkte rekeningen worden geïmporteerd en gesynchroniseerd. Niet-aangevinkte rekeningen komen nooit in deze werkruimte.",
+    "awaitingSelection": "Kies welke rekeningen je wilt importeren. Er wordt niets geïmporteerd tot je dat doet.",
+    "selectAll": "Alles selecteren",
+    "clearAll": "Alles wissen",
+    "transactionCount": "Transacties: {{count}}",
+    "importNewAccounts": "Nieuwe rekeningen automatisch importeren",
+    "importNewAccountsHint": "Indien uitgevinkt wachten rekeningen die later bij de bank verschijnen hier tot je ze aanvinkt.",
+    "historyTitle": "Geïmporteerde geschiedenis bewaren?",
+    "historyBody": "{{names}} stopt met synchroniseren. De al geïmporteerde transacties ({{count}}) verwijderen of zonder updates in deze werkruimte bewaren?",
+    "keepHistory": "Geschiedenis bewaren",
+    "deleteHistory": "Geschiedenis verwijderen",
+    "accountsSaved": "Rekeningen opgeslagen",
+    "saveAndImport": "Opslaan en importeren",
+    "importingAccounts": "De geselecteerde rekeningen en hun geschiedenis worden geïmporteerd. Dit kan een minuut duren.",
+    "notImportedCount": "Niet-geïmporteerde rekeningen: {{count}}",
+    "accountState": {
+      "imported": "Geïmporteerd",
+      "willImport": "Wordt met geschiedenis geïmporteerd",
+      "notImported": "Niet geïmporteerd",
+      "willStop": "Stopt met synchroniseren",
+      "historyKept": "Niet gesynchroniseerd · geschiedenis bewaard"
+    }
   },
   "settings": {
     "rules": "Regels",

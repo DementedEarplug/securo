@@ -582,6 +582,19 @@ async def delete_account(session: AsyncSession, account_id: uuid.UUID, workspace
     if account.connection_id is not None:
         raise ValueError("Cannot delete bank-connected accounts")
 
+    await purge_account(session, account)
+    await session.commit()
+    return True
+
+
+async def purge_account(session: AsyncSession, account: Account) -> None:
+    """Delete an account and everything hanging off it, without committing.
+
+    Shared by manual account deletion and by a bank connection dropping an
+    account the user no longer imports, so both clean up the same way.
+    """
+    account_id = account.id
+
     # Clean up attachment files for all transactions in this account
     from app.services.attachment_service import cleanup_attachment_files
     from app.models.import_log import ImportLog
@@ -622,9 +635,23 @@ async def delete_account(session: AsyncSession, account_id: uuid.UUID, workspace
         .values(account_id=None)
     )
 
+    # A transfer leg in another account would otherwise point at a pair whose
+    # other half is gone, and keep being hidden from reports as a transfer.
+    pair_ids = select(Transaction.transfer_pair_id).where(
+        Transaction.account_id == account_id,
+        Transaction.transfer_pair_id.isnot(None),
+    )
+    await session.execute(
+        update(Transaction)
+        .where(
+            Transaction.account_id != account_id,
+            Transaction.transfer_pair_id.in_(pair_ids),
+        )
+        .values(transfer_pair_id=None)
+    )
+
     await session.delete(account)
-    await session.commit()
-    return True
+    await session.flush()
 
 
 async def close_account(

@@ -1318,7 +1318,30 @@
     "syncAssetsHint": "When disabled, this connection syncs accounts and transactions but leaves provider investment holdings untouched.",
     "initialSyncSettings": "Sync options",
     "initialSyncSettingsDesc": "Choose what Securo should import before opening the connector.",
-    "continueToConnector": "Continue to connector"
+    "continueToConnector": "Continue to connector",
+    "chooseAccounts": "Choose accounts",
+    "chooseAccountsIntro": "Only the checked accounts are imported and kept in sync. Unchecked accounts never reach this workspace.",
+    "awaitingSelection": "Choose which accounts to import. Nothing is imported until you do.",
+    "selectAll": "Select all",
+    "clearAll": "Clear all",
+    "transactionCount": "Transactions: {{count}}",
+    "importNewAccounts": "Import new accounts automatically",
+    "importNewAccountsHint": "When unchecked, accounts that appear at the bank later wait here until you check them.",
+    "historyTitle": "Keep the imported history?",
+    "historyBody": "{{names}} will stop syncing. Delete the transactions already imported ({{count}}), or keep them in this workspace without updates?",
+    "keepHistory": "Keep history",
+    "deleteHistory": "Delete history",
+    "accountsSaved": "Accounts saved",
+    "saveAndImport": "Save and import",
+    "importingAccounts": "Importing the selected accounts and their history. This can take a minute.",
+    "notImportedCount": "Accounts not imported: {{count}}",
+    "accountState": {
+      "imported": "Imported",
+      "willImport": "Will be imported with its history",
+      "notImported": "Not imported",
+      "willStop": "Will stop syncing",
+      "historyKept": "Not syncing · history kept"
+    }
   },
   "settings": {
     "rules": "Rules",

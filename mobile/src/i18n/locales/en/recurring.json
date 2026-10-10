@@ -1,0 +1,28 @@
+{
+  "newTitle": "New recurring transaction",
+  "editTitle": "Edit recurring transaction",
+  "emptyTitle": "No recurring transactions",
+  "emptyBody": "Add bills and income that repeat, like rent or a salary, to see them coming.",
+  "generate": "Add the ones due now",
+  "generatedTitle": "Done",
+  "generatedBody_one": "{{count}} transaction was added.",
+  "generatedBody_other": "{{count}} transactions were added.",
+  "next": "Next {{date}}",
+  "paused": "Paused",
+  "pausedSection": "Paused",
+  "startDate": "Starts",
+  "dayOfMonth": "Day of the month",
+  "dayOfMonthPlaceholder": "Same day as the start date",
+  "noEnd": "No end",
+  "weekend": "If it falls on a weekend",
+  "weekendOptions": {
+    "none": "Keep the date",
+    "previous_friday": "Friday before",
+    "next_monday": "Monday after"
+  },
+  "autoGenerate": "Add transactions automatically",
+  "autoGenerateHint": "Off: it only shows up as a forecast and to match bank transactions.",
+  "active": "Active",
+  "deleteTitle": "Delete this recurring transaction?",
+  "deleteBody": "Transactions it already added stay."
+}

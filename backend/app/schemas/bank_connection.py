@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BankConnectionBase(BaseModel):
@@ -53,6 +54,9 @@ class OAuthCallbackRequest(BaseModel):
     provider: Optional[str] = None
     sync_assets: Optional[bool] = None
     reconnect_connection_id: Optional[uuid.UUID] = None
+    # Link without importing anything; the client then saves a selection
+    # through PUT /connections/{id}/accounts, which runs the first import.
+    select_accounts: bool = False
 
 
 class ReauthUrlResponse(BaseModel):
@@ -92,3 +96,37 @@ class ConnectionSettingsUpdate(BaseModel):
     payee_source: Optional[Literal["auto", "merchant", "payment_data", "description", "none"]] = None
     import_pending: Optional[bool] = None
     sync_assets: Optional[bool] = None
+
+
+class ConnectionAccountRead(BaseModel):
+    """An account a connection can import, whether or not it is imported."""
+
+    external_id: str
+    name: str
+    type: str
+    currency: str
+    balance: Optional[Decimal] = None
+    masked_number: Optional[str] = None
+    institution_name: Optional[str] = None
+    included: bool
+    # The imported account, if any. Set for an excluded account whose
+    # history was kept.
+    account_id: Optional[uuid.UUID] = None
+    transaction_count: int = 0
+    is_closed: bool = False
+
+
+class ConnectionAccountsRead(BaseModel):
+    accounts: list[ConnectionAccountRead]
+    import_new_accounts: bool
+    # Linked with select_accounts and nothing imported yet.
+    awaiting_selection: bool
+
+
+class ConnectionAccountsUpdate(BaseModel):
+    # Provider external ids of the accounts to leave out.
+    excluded: list[str] = Field(default_factory=list)
+    import_new_accounts: bool = True
+    # Excluded accounts whose imported account and transactions are deleted.
+    # Others keep their history and simply stop syncing.
+    remove_history: list[str] = Field(default_factory=list)

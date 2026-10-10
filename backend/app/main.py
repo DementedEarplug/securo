@@ -13,6 +13,8 @@ from app.api.groups import router as groups_router
 from app.api.categories import router as categories_router
 from app.api.category_groups import router as category_groups_router
 from app.api.connections import router as connections_router
+from app.api.assetlinks import router as assetlinks_router
+from app.api.auth_sessions import router as auth_sessions_router
 from app.api.custom_auth import router as custom_auth_router
 from app.api.dashboard import router as dashboard_router
 from app.api.import_logs import router as import_logs_router
@@ -142,7 +144,14 @@ app.include_router(
     prefix="/api/auth",
     tags=["auth"],
 )
+app.include_router(
+    auth_sessions_router,
+    prefix="/api/auth",
+    tags=["auth"],
+)
 app.include_router(oidc_auth_router)
+# Served at the site root, not under /api: Android looks for it at exactly this path.
+app.include_router(assetlinks_router)
 app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
     prefix="/api/auth",

@@ -12,12 +12,13 @@ domain are then rejected rather than silently issuing credentials the browser
 will refuse.
 """
 
+import base64
 from dataclasses import dataclass
 from ipaddress import ip_address
 
 from fastapi import HTTPException, Request, status
 
-from app.core.config import get_settings
+from app.core.config import get_settings, parse_cert_fingerprints
 
 
 @dataclass(frozen=True)
@@ -140,3 +141,31 @@ def resolve_webauthn_context(request: Request) -> WebAuthnContext:
         rp_id = hostname
 
     return WebAuthnContext(rp_id=rp_id, origin=settings.webauthn_origin.strip() or origin)
+
+
+def android_cert_fingerprints() -> list[str]:
+    """Configured signing-certificate fingerprints (validated when settings load)."""
+    return parse_cert_fingerprints(get_settings().webauthn_android_cert_fingerprints)
+
+
+def android_origins() -> list[str]:
+    """The origins Android Credential Manager reports for the configured app.
+
+    Android does not sign with a web origin: clientDataJSON carries
+    ``android:apk-key-hash:<base64url(sha256(signing cert))>`` instead, so each
+    trusted build needs its own entry next to the browser origin.
+    """
+    if not get_settings().webauthn_android_package_name.strip():
+        return []
+    origins = []
+    for fingerprint in android_cert_fingerprints():
+        digest = bytes.fromhex(fingerprint.replace(":", ""))
+        encoded = base64.urlsafe_b64encode(digest).decode().rstrip("=")
+        origins.append(f"android:apk-key-hash:{encoded}")
+    return origins
+
+
+def expected_origins(challenge_origin: str) -> list[str]:
+    """Origins a passkey response may come from: the one the ceremony was
+    issued for, plus the Android app's when it is configured."""
+    return [challenge_origin, *android_origins()]

@@ -1,0 +1,27 @@
+{
+  "newTitle": "New payee",
+  "editTitle": "Edit payee",
+  "search": "Search payees",
+  "empty": "No payees",
+  "transactionCount_one": "{{count}} transaction",
+  "transactionCount_other": "{{count}} transactions",
+  "types": {
+    "none": "Not set",
+    "person": "Person",
+    "company": "Company"
+  },
+  "favorite": "Mark as favorite",
+  "unfavorite": "Remove from favorites",
+  "email": "Email",
+  "phone": "Phone",
+  "website": "Website",
+  "address": "Address",
+  "duplicateName": "There is already a payee with this name.",
+  "deleteTitle": "Delete this payee?",
+  "deleteBody": "{{name}} will be deleted. Its transactions stay, without a payee.",
+  "hasInvoices": "This payee has invoices, so it can't be deleted. Merge it into another payee instead.",
+  "mergeInto": "Merge into another payee",
+  "merge": "Merge",
+  "mergeTitle": "Merge payees?",
+  "mergeBody": "{{source}}'s transactions move to {{target}}, and {{source}} is deleted."
+}

@@ -65,6 +65,8 @@ config:
   oidcRolesClaim: "groups"
   oidcAdminRoles: ""
   oidcWorkspaceRoleMap: ""
+  # Comma-separated redirect URIs the Android app may use for SSO (e.g. securo://oidc); empty disables it
+  oidcNativeRedirectUris: ""
   fxSyncMode: "on_demand"
   tesouroDiretoEnabled: "true"
 

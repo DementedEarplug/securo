@@ -1,0 +1,22 @@
+{
+  "title": "Orçamentos",
+  "previousMonth": "Mês anterior",
+  "nextMonth": "Próximo mês",
+  "spentOfBudget": "Gasto do orçamento",
+  "unbudgeted": "Gasto fora dos orçamentos",
+  "emptyTitle": "Nenhum orçamento neste mês",
+  "emptyBody": "Toque em + para definir um orçamento mensal para uma categoria.",
+  "form": {
+    "newTitle": "Definir orçamento",
+    "editTitle": "Editar orçamento",
+    "chooseCategory": "Escolha uma categoria",
+    "categoryRequired": "Escolha uma categoria.",
+    "repeat": "Repetir todo mês",
+    "repeatHint": "Desligado: só para este mês.",
+    "fromThisMonth": "Só a partir deste mês",
+    "fromThisMonthHint": "Os meses anteriores mantêm o valor antigo. Desligado: muda todos os meses.",
+    "deleteTitle": "Remover este orçamento?",
+    "deleteBody": "A categoria fica sem orçamento neste mês.",
+    "deleteRecurringBody": "A categoria fica sem orçamento em todos os meses cobertos por este orçamento recorrente."
+  }
+}

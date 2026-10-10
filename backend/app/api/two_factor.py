@@ -2,16 +2,18 @@ import json
 import uuid
 
 import pyotp
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import current_active_user, get_jwt_strategy
+from app.core.auth import current_active_user
 from app.core.auth_policy import require_local_auth_enabled
 from app.core.database import get_async_session
 from app.core.rate_limit import login_rate_limit
 from app.core.redis import get_redis
 from app.models.user import User
+from app.schemas.auth import TokenResponse
+from app.services import refresh_token_service
 from app.schemas.two_factor import (
     TwoFactorDisableRequest,
     TwoFactorEnableRequest,
@@ -111,9 +113,16 @@ async def disable_2fa(
     return {"detail": "2FA disabled"}
 
 
-@router.post("/2fa/verify", dependencies=[Depends(login_rate_limit)])
+@router.post(
+    "/2fa/verify",
+    response_model=TokenResponse,
+    response_model_exclude_none=True,
+    dependencies=[Depends(login_rate_limit)],
+)
 async def verify_2fa(
     body: TwoFactorVerifyRequest,
+    request: Request,
+    remember: bool = Query(False, description="Also issue a refresh token (native clients)."),
     session: AsyncSession = Depends(get_async_session),
 ):
     r = await get_redis()
@@ -141,7 +150,6 @@ async def verify_2fa(
     # Delete temp token
     await r.delete(redis_key)
 
-    # Generate JWT
-    strategy = get_jwt_strategy()
-    token = await strategy.write_token(user)
-    return {"access_token": token, "token_type": "bearer"}
+    return await refresh_token_service.build_token_response(
+        session, user, remember=remember, request=request
+    )

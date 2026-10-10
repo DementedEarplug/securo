@@ -1,0 +1,101 @@
+{
+  "add": "Connect a bank",
+  "emptyTitle": "No banks connected",
+  "emptyBody": "Connect a bank to import transactions and balances automatically.",
+  "chooseProvider": "Choose how to connect. Only the services your server is set up for can be used.",
+  "notConfigured": "Not set up on this server",
+  "providers": {
+    "simplefin": "US and international banks, through a SimpleFIN Bridge token.",
+    "pluggy": "Brazilian banks, through Pluggy.",
+    "enable_banking": "European banks (PSD2), through Enable Banking."
+  },
+  "status": {
+    "active": "Connected",
+    "error": "Needs attention",
+    "expired": "Access expired"
+  },
+  "syncedAgo": "Synced {{when}}",
+  "neverSynced": "Not synced yet",
+  "syncNow": "Sync now",
+  "syncing": "Syncing…",
+  "syncPatience": "This can take a minute while your bank prepares the data.",
+  "syncDoneTitle": "Sync complete",
+  "syncDone": "Your accounts are up to date.",
+  "syncMerged_one": "Up to date. {{count}} duplicate transaction was merged.",
+  "syncMerged_other": "Up to date. {{count}} duplicate transactions were merged.",
+  "openHelp": "Open help",
+  "accounts": "Accounts",
+  "noAccounts": "No accounts from this connection",
+  "settings": "Settings",
+  "displayName": "Name",
+  "payeeSource": "Payee comes from",
+  "payeeSources": {
+    "auto": "Automatic",
+    "merchant": "Merchant",
+    "payment_data": "Payment data",
+    "description": "Description",
+    "none": "Don't set"
+  },
+  "importPending": "Import pending transactions",
+  "importPendingHint": "Include transactions the bank hasn't posted yet.",
+  "syncAssets": "Also import investments",
+  "syncAssetsHint": "Bring in holdings the bank reports, as assets.",
+  "reconnect": "Reconnect",
+  "delete": "Remove connection",
+  "deleteTitle": "Remove this connection?",
+  "deleteBody": "{{name}} and all of its accounts and transactions will be deleted. Investments it imported are archived.",
+  "connect": "Connect",
+  "linkPatience": "Importing your accounts and history. This can take a minute.",
+  "linkFailedTitle": "Could not connect",
+  "simplefin": {
+    "title": "Connect with SimpleFIN",
+    "reconnectTitle": "Reconnect SimpleFIN",
+    "step1": "1. Create a setup token in SimpleFIN Bridge (it opens in your browser).",
+    "openBridge": "Open SimpleFIN Bridge",
+    "step2": "2. Copy the token and paste it here. A token works only once.",
+    "token": "Setup token",
+    "paste": "Paste from clipboard",
+    "claiming": "Checking the token and reading your accounts…"
+  },
+  "enableBanking": {
+    "intro": "Pick your bank. You'll sign in at the bank to approve access, then come back here.",
+    "chooseCountry": "Choose a country",
+    "searchBank": "Search banks",
+    "noBanks": "No banks found",
+    "consentTitle": "Approve at your bank"
+  },
+  "pluggy": {
+    "title": "Connect with Pluggy",
+    "intro": "Pluggy will ask you to choose your bank and sign in."
+  },
+  "chooseAccounts": "Choose accounts",
+  "notImportedCount_one": "{{count}} account not imported",
+  "notImportedCount_other": "{{count}} accounts not imported",
+  "awaitingSelection": "Choose which accounts to import. Nothing is imported until you do.",
+  "selection": {
+    "intro": "Only the accounts turned on are imported and kept in sync. Accounts left off never reach this workspace.",
+    "introInitial": "Choose the accounts that belong in this workspace. Nothing has been imported yet; the accounts you turn on are imported with their history when you save.",
+    "selectAll": "Select all",
+    "clearAll": "Clear all",
+    "importNew": "Import new accounts automatically",
+    "importNewHint": "When off, accounts that appear at the bank later wait here, off, until you turn them on.",
+    "state": {
+      "imported_one": "Imported · {{count}} transaction",
+      "imported_other": "Imported · {{count}} transactions",
+      "willImport": "Will be imported with its history",
+      "notImported": "Not imported",
+      "willStop": "Will stop syncing",
+      "historyKept": "Not syncing · history kept"
+    },
+    "saveAndImport_one": "Save and import {{count}} account",
+    "saveAndImport_other": "Save and import {{count}} accounts",
+    "historyTitle": "Already imported",
+    "historyBody_one": "{{names}} will stop syncing. Delete the {{count}} transaction already imported, or keep it here without updates?",
+    "historyBody_other": "{{names}} will stop syncing. Delete the {{count}} transactions already imported, or keep them here without updates?",
+    "keepHistory": "Keep",
+    "deleteHistory": "Delete",
+    "doneTitle": "Accounts saved",
+    "doneImported_one": "{{count}} account was imported.",
+    "doneImported_other": "{{count}} accounts were imported."
+  }
+}

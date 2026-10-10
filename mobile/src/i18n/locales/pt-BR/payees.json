@@ -1,0 +1,27 @@
+{
+  "newTitle": "Novo favorecido",
+  "editTitle": "Editar favorecido",
+  "search": "Buscar favorecidos",
+  "empty": "Nenhum favorecido",
+  "transactionCount_one": "{{count}} transação",
+  "transactionCount_other": "{{count}} transações",
+  "types": {
+    "none": "Não definido",
+    "person": "Pessoa",
+    "company": "Empresa"
+  },
+  "favorite": "Marcar como favorito",
+  "unfavorite": "Remover dos favoritos",
+  "email": "E-mail",
+  "phone": "Telefone",
+  "website": "Site",
+  "address": "Endereço",
+  "duplicateName": "Já existe um favorecido com este nome.",
+  "deleteTitle": "Excluir este favorecido?",
+  "deleteBody": "{{name}} será excluído. Suas transações continuam, sem favorecido.",
+  "hasInvoices": "Este favorecido tem faturas e não pode ser excluído. Mescle-o com outro favorecido.",
+  "mergeInto": "Mesclar com outro favorecido",
+  "merge": "Mesclar",
+  "mergeTitle": "Mesclar favorecidos?",
+  "mergeBody": "As transações de {{source}} vão para {{target}}, e {{source}} é excluído."
+}

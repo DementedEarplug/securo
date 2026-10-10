@@ -1,0 +1,101 @@
+{
+  "add": "Conectar um banco",
+  "emptyTitle": "Nenhum banco conectado",
+  "emptyBody": "Conecte um banco para importar transações e saldos automaticamente.",
+  "chooseProvider": "Escolha como conectar. Só é possível usar os serviços configurados no seu servidor.",
+  "notConfigured": "Não configurado neste servidor",
+  "providers": {
+    "simplefin": "Bancos dos EUA e internacionais, com um token do SimpleFIN Bridge.",
+    "pluggy": "Bancos brasileiros, pela Pluggy.",
+    "enable_banking": "Bancos europeus (PSD2), pela Enable Banking."
+  },
+  "status": {
+    "active": "Conectado",
+    "error": "Requer atenção",
+    "expired": "Acesso expirado"
+  },
+  "syncedAgo": "Sincronizado {{when}}",
+  "neverSynced": "Ainda não sincronizado",
+  "syncNow": "Sincronizar agora",
+  "syncing": "Sincronizando…",
+  "syncPatience": "Isso pode levar um minuto enquanto o banco prepara os dados.",
+  "syncDoneTitle": "Sincronização concluída",
+  "syncDone": "Suas contas estão atualizadas.",
+  "syncMerged_one": "Atualizado. {{count}} transação duplicada foi mesclada.",
+  "syncMerged_other": "Atualizado. {{count}} transações duplicadas foram mescladas.",
+  "openHelp": "Abrir ajuda",
+  "accounts": "Contas",
+  "noAccounts": "Nenhuma conta desta conexão",
+  "settings": "Configurações",
+  "displayName": "Nome",
+  "payeeSource": "Favorecido vem de",
+  "payeeSources": {
+    "auto": "Automático",
+    "merchant": "Estabelecimento",
+    "payment_data": "Dados do pagamento",
+    "description": "Descrição",
+    "none": "Não definir"
+  },
+  "importPending": "Importar transações pendentes",
+  "importPendingHint": "Inclui transações que o banco ainda não efetivou.",
+  "syncAssets": "Importar também investimentos",
+  "syncAssetsHint": "Traz as posições que o banco informa, como bens.",
+  "reconnect": "Reconectar",
+  "delete": "Remover conexão",
+  "deleteTitle": "Remover esta conexão?",
+  "deleteBody": "{{name}} e todas as suas contas e transações serão excluídas. Investimentos importados por ela são arquivados.",
+  "connect": "Conectar",
+  "linkPatience": "Importando suas contas e o histórico. Isso pode levar um minuto.",
+  "linkFailedTitle": "Não foi possível conectar",
+  "simplefin": {
+    "title": "Conectar com SimpleFIN",
+    "reconnectTitle": "Reconectar SimpleFIN",
+    "step1": "1. Crie um token de configuração no SimpleFIN Bridge (abre no navegador).",
+    "openBridge": "Abrir SimpleFIN Bridge",
+    "step2": "2. Copie o token e cole aqui. Cada token funciona uma única vez.",
+    "token": "Token de configuração",
+    "paste": "Colar da área de transferência",
+    "claiming": "Verificando o token e lendo suas contas…"
+  },
+  "enableBanking": {
+    "intro": "Escolha seu banco. Você vai entrar no banco para autorizar o acesso e depois voltar para cá.",
+    "chooseCountry": "Escolha um país",
+    "searchBank": "Buscar bancos",
+    "noBanks": "Nenhum banco encontrado",
+    "consentTitle": "Autorize no seu banco"
+  },
+  "pluggy": {
+    "title": "Conectar com Pluggy",
+    "intro": "A Pluggy vai pedir para você escolher o banco e entrar."
+  },
+  "chooseAccounts": "Escolher contas",
+  "notImportedCount_one": "{{count}} conta não importada",
+  "notImportedCount_other": "{{count}} contas não importadas",
+  "awaitingSelection": "Escolha quais contas importar. Nada é importado até você escolher.",
+  "selection": {
+    "intro": "Só as contas ativadas são importadas e sincronizadas. As contas desativadas nunca chegam a este espaço de trabalho.",
+    "introInitial": "Escolha as contas que pertencem a este espaço de trabalho. Nada foi importado ainda; as contas ativadas são importadas com o histórico quando você salvar.",
+    "selectAll": "Selecionar todas",
+    "clearAll": "Limpar",
+    "importNew": "Importar novas contas automaticamente",
+    "importNewHint": "Desativado, as contas que aparecerem no banco depois ficam aqui, desativadas, até você ativá-las.",
+    "state": {
+      "imported_one": "Importada · {{count}} transação",
+      "imported_other": "Importada · {{count}} transações",
+      "willImport": "Será importada com o histórico",
+      "notImported": "Não importada",
+      "willStop": "Vai parar de sincronizar",
+      "historyKept": "Sem sincronizar · histórico mantido"
+    },
+    "saveAndImport_one": "Salvar e importar {{count}} conta",
+    "saveAndImport_other": "Salvar e importar {{count}} contas",
+    "historyTitle": "Já importada",
+    "historyBody_one": "{{names}} vai parar de sincronizar. Excluir a {{count}} transação já importada ou mantê-la aqui sem atualizações?",
+    "historyBody_other": "{{names}} vai parar de sincronizar. Excluir as {{count}} transações já importadas ou mantê-las aqui sem atualizações?",
+    "keepHistory": "Manter",
+    "deleteHistory": "Excluir",
+    "doneTitle": "Contas salvas",
+    "doneImported_one": "{{count}} conta foi importada.",
+    "doneImported_other": "{{count}} contas foram importadas."
+  }
+}

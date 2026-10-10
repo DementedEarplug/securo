@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,16 +25,18 @@ from webauthn.helpers.structs import (
     UserVerificationRequirement,
 )
 
-from app.core.auth import current_active_user, get_jwt_strategy
+from app.core.auth import current_active_user
 from app.core.auth_policy import require_local_auth_enabled
 from app.core.config import get_settings
 from app.core.database import get_async_session
 from app.core.rate_limit import login_rate_limit
 from app.core.redis import get_redis
-from app.core.webauthn import resolve_webauthn_context
+from app.core.webauthn import expected_origins, resolve_webauthn_context
 from app.api.two_factor import _parse_temp_token_payload
 from app.models.passkey import UserPasskey
 from app.models.user import User
+from app.schemas.auth import TokenResponse
+from app.services import refresh_token_service
 from app.schemas.passkey import (
     PasskeyAuthenticateOptionsRequest,
     PasskeyAuthenticateVerifyRequest,
@@ -156,7 +158,7 @@ async def _verify_passkey_credential(
         verification = verify_authentication_response(
             credential=_credential_json(credential),
             expected_challenge=base64url_to_bytes(challenge["challenge"]),
-            expected_origin=challenge["origin"],
+            expected_origin=expected_origins(challenge["origin"]),
             expected_rp_id=challenge["rp_id"],
             credential_public_key=base64url_to_bytes(passkey.public_key),
             # Synced passkeys (1Password, iCloud Keychain, Google Password
@@ -264,7 +266,7 @@ async def verify_passkey_registration(
         verification = verify_registration_response(
             credential=_credential_json(body.credential),
             expected_challenge=base64url_to_bytes(challenge["challenge"]),
-            expected_origin=challenge["origin"],
+            expected_origin=expected_origins(challenge["origin"]),
             expected_rp_id=challenge["rp_id"],
             require_user_verification=True,
         )
@@ -365,10 +367,14 @@ async def passkey_authentication_options(
 
 @router.post(
     "/passkeys/authenticate/verify",
+    response_model=TokenResponse,
+    response_model_exclude_none=True,
     dependencies=[Depends(require_local_auth_enabled), Depends(login_rate_limit)],
 )
 async def verify_passkey_authentication(
     body: PasskeyAuthenticateVerifyRequest,
+    request: Request,
+    remember: bool = Query(False, description="Also issue a refresh token (native clients)."),
     session: AsyncSession = Depends(get_async_session),
 ):
     challenge = await _pop_challenge(AUTHENTICATE_CHALLENGE_PREFIX, body.challenge_id)
@@ -396,9 +402,9 @@ async def verify_passkey_authentication(
         session=session,
     )
 
-    strategy = get_jwt_strategy()
-    token = await strategy.write_token(user)
-    return {"access_token": token, "token_type": "bearer"}
+    return await refresh_token_service.build_token_response(
+        session, user, remember=remember, request=request
+    )
 
 
 @router.post(
@@ -442,10 +448,14 @@ async def passkey_second_factor_options(
 
 @router.post(
     "/passkeys/2fa/verify",
+    response_model=TokenResponse,
+    response_model_exclude_none=True,
     dependencies=[Depends(require_local_auth_enabled), Depends(login_rate_limit)],
 )
 async def verify_passkey_second_factor(
     body: PasskeySecondFactorVerifyRequest,
+    request: Request,
+    remember: bool = Query(False, description="Also issue a refresh token (native clients)."),
     session: AsyncSession = Depends(get_async_session),
 ):
     user_id = await _get_second_factor_user_id(body.temp_token)
@@ -475,6 +485,6 @@ async def verify_passkey_second_factor(
     )
     await _delete_second_factor_temp_token(body.temp_token)
 
-    strategy = get_jwt_strategy()
-    token = await strategy.write_token(user)
-    return {"access_token": token, "token_type": "bearer"}
+    return await refresh_token_service.build_token_response(
+        session, user, remember=remember, request=request
+    )

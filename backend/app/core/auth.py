@@ -40,6 +40,22 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             require_local_auth_enabled()
         return await super().update(user_update, user, safe=safe, request=request)
 
+    async def on_after_update(
+        self, user: User, update_dict: dict, request: Optional[Request] = None
+    ):
+        # A new password ends every long-lived session; whoever changed it
+        # signs the other devices back in.
+        if "password" in update_dict:
+            await self._revoke_refresh_tokens(user)
+
+    async def on_after_reset_password(self, user: User, request: Optional[Request] = None):
+        await self._revoke_refresh_tokens(user)
+
+    async def _revoke_refresh_tokens(self, user: User) -> None:
+        from app.services.refresh_token_service import revoke_all_for_user
+
+        await revoke_all_for_user(self.user_db.session, user.id)
+
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         print(f"User {user.id} has registered.")
         # If request is None, this was called programmatically (e.g., from setup endpoint)

@@ -1,0 +1,11 @@
+node_modules/
+.expo/
+expo-env.d.ts
+# Continuous Native Generation: `expo prebuild` / `expo run:android` writes
+# these from app.json. They are build output, never edited by hand.
+android/
+ios/
+*.apk
+*.aab
+*.keystore
+!debug.keystore

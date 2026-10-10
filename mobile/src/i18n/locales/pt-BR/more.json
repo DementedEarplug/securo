@@ -1,0 +1,29 @@
+{
+  "title": "Mais",
+  "sections": {
+    "banking": "Bancos",
+    "organize": "Organizar",
+    "plan": "Planejar",
+    "wealth": "Patrimônio e negócios",
+    "data": "Dados",
+    "admin": "Administração",
+    "app": "Aplicativo"
+  },
+  "items": {
+    "connections": "Conexões bancárias",
+    "import": "Importar extrato",
+    "importLogs": "Histórico de importações",
+    "categories": "Categorias",
+    "rules": "Regras",
+    "payees": "Favorecidos",
+    "recurring": "Transações recorrentes",
+    "goals": "Metas",
+    "groups": "Grupos de divisão",
+    "assets": "Bens e investimentos",
+    "invoices": "Faturas",
+    "export": "Exportar e backup",
+    "agents": "Assistente de IA",
+    "admin": "Administração",
+    "settings": "Ajustes"
+  }
+}

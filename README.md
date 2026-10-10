@@ -153,6 +153,16 @@ OIDC_WORKSPACE_ROLE_MAP={"securo-owners":"owner","securo-editors":"editor","secu
 
 `OIDC_ADMIN_ROLES` grants or revokes Securo admin (`is_superuser`) on each OIDC login. `OIDC_WORKSPACE_ROLE_MAP` maps provider roles/groups to the user's Personal workspace role (`owner`, `editor`, or `viewer`); if multiple mapped roles are present, Securo applies the highest permission. Leave `OIDC_SYNC_ROLES=false` to keep all Securo roles managed locally.
 
+### OIDC in the Android app
+
+The [Android app](#android-app-preview) signs in through the phone's browser using the same provider and the same redirect URI as the web app, so nothing changes in your provider. Allow the app's return address on the server:
+
+```
+OIDC_NATIVE_REDIRECT_URIS=securo://oidc
+```
+
+After the provider signs the user in, Securo sends the browser back to `securo://oidc` with a one-time code instead of a token. The code lasts 60 seconds, works once, and only together with a secret the app generated for that sign-in (PKCE), so another app catching the redirect cannot use it. The app trades it at `POST /api/auth/oidc/exchange` for a session that stays signed in like a password login. Leave the variable empty to keep SSO web-only.
+
 ## Passkeys (Optional)
 
 Sign in with Touch ID, Face ID, Windows Hello, or a security key. Passkeys are on by default and need no configuration: they follow whatever address you open Securo on.
@@ -169,6 +179,27 @@ FRONTEND_URL=https://securo.example.com
 ```
 
 To pin passkeys to one domain, set `WEBAUTHN_RP_ID` (use the parent domain if you reach Securo on several subdomains). Otherwise Securo follows the browser, and requests from an unusable address get an explanation in the UI instead of a silent failure.
+
+To let the [Android app](#android-app-preview) use the same passkeys, tell the server which app build to trust. Use the SHA-256 fingerprint of the key the app was signed with (`keytool -list -v -keystore <keystore>`):
+
+```
+WEBAUTHN_ANDROID_PACKAGE_NAME=com.usesecuro.app
+WEBAUTHN_ANDROID_CERT_FINGERPRINTS=14:6D:E9:...:44:E5
+```
+
+Securo then accepts passkey sign-ins from that app and publishes `/.well-known/assetlinks.json`, which Android checks before offering the site's passkeys to an app.
+
+## Android App (Preview)
+
+[`mobile/`](mobile/) holds an Android app for checking balances, browsing and adding transactions, and following budgets and reports on the go. It talks to your own server, so there is nothing to configure on the server side beyond what the web app already needs: open the app, enter the address you use in the browser, and sign in with your email and password (two-factor codes work as usual).
+
+The app stays signed in for `REFRESH_TOKEN_EXPIRE_DAYS` (default 30) after its last use; each time it refreshes, the clock restarts. Changing your password, or an admin resetting it, signs every device out, and each user can see and revoke their signed-in devices from the app's settings.
+
+```
+REFRESH_TOKEN_EXPIRE_DAYS=30
+```
+
+Single sign-on works once the server allows the app's redirect (see [OIDC in the Android app](#oidc-in-the-android-app)), and passkeys once the server trusts the app build (see [Passkeys](#passkeys-optional)). See [mobile/README.md](mobile/README.md) to build and run it.
 
 ## Exchange Rates (Optional)
 
@@ -219,6 +250,7 @@ Without that server the agents still chat, but they have no tools and cannot rea
 |-------|-------|
 | Backend | FastAPI, SQLAlchemy, Alembic, Celery |
 | Frontend | React, TypeScript, Vite, Tailwind CSS |
+| Mobile | React Native, Expo, TypeScript |
 | Database | PostgreSQL |
 | Queue | Redis + Celery |
 

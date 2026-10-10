@@ -1,0 +1,43 @@
+{
+  "workspaceNotice": "Exports and backups cover the current workspace, {{name}}.",
+  "periods": {
+    "all": "All time",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "thisYear": "This year",
+    "custom": "Custom range"
+  },
+  "csv": {
+    "title": "Transactions (CSV)",
+    "description": "A spreadsheet of your transactions with date, description, amount, category, account, payee and notes.",
+    "period": "Period",
+    "from": "From",
+    "to": "To",
+    "accounts": "Accounts",
+    "allAccounts": "All accounts",
+    "accountCount_one": "{{count}} account",
+    "accountCount_other": "{{count}} accounts",
+    "excludeIgnored": "Leave out ignored transactions",
+    "excludeIgnoredHint": "Skips rows you marked ignored and rows in ignored categories.",
+    "button": "Export CSV"
+  },
+  "rules": {
+    "title": "Categorization rules (JSON)",
+    "description": "Your rules as a file you can import into another Securo workspace or server.",
+    "button": "Export rules"
+  },
+  "backup": {
+    "title": "Workspace backup",
+    "description": "A zip with every account, transaction and rule in this workspace, as plain JSON.",
+    "passwordLabel": "Password (optional)",
+    "passwordPlaceholder": "Leave empty for an unencrypted backup",
+    "confirmLabel": "Confirm password",
+    "passwordTooShort": "Use at least {{min}} characters.",
+    "passwordMismatch": "The passwords don't match.",
+    "encryptionNote": "The archive is encrypted with AES-256 and opens in any standard archiver. Securo does not store this password and cannot recover the file without it.",
+    "button": "Create backup",
+    "success": "Backup created.",
+    "successEncrypted": "Encrypted backup created. Keep the password somewhere safe.",
+    "restoreNote": "Securo can't restore from a backup yet. Keep the archive as a record you can open with any zip tool."
+  }
+}

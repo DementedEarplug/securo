@@ -139,6 +139,10 @@ async def update_user(
 
     session.add(user)
     await session.commit()
+    if data.password is not None:
+        from app.services.refresh_token_service import revoke_all_for_user
+
+        await revoke_all_for_user(session, user.id)
     await session.refresh(user)
     return user
 

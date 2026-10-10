@@ -44,12 +44,15 @@ ALLOWLIST: dict[tuple[str, str], str] = {
     ("POST", "/passkeys/register/options"): "the requester's own credentials",
     ("POST", "/passkeys/register/verify"): "the requester's own credentials",
     ("DELETE", "/passkeys/{passkey_id}"): "the requester's own credentials",
+    ("DELETE", "/sessions/{session_id}"): "the requester's own signed-in devices",
     ("POST", "/passkeys/authenticate/options"): "unauthenticated: this is how you log in",
     ("POST", "/passkeys/authenticate/verify"): "unauthenticated: this is how you log in",
     ("POST", "/passkeys/2fa/options"): "unauthenticated step of login",
     ("POST", "/passkeys/2fa/verify"): "unauthenticated step of login",
     ("POST", "/login"): "unauthenticated by definition",
     ("POST", "/logout"): "unauthenticated by definition",
+    ("POST", "/refresh"): "unauthenticated: the refresh token is the credential",
+    ("POST", "/api/auth/oidc/exchange"): "unauthenticated: the one-time code and PKCE verifier are the credential",
     ("POST", "/register"): "unauthenticated by definition",
     ("POST", "/forgot-password"): "unauthenticated by definition",
     ("POST", "/reset-password"): "unauthenticated by definition",
@@ -104,7 +107,8 @@ PUBLIC_ROUTES = {
     ("POST", path) for path in (
         "/login", "/logout", "/register", "/forgot-password", "/reset-password",
         "/2fa/verify", "/passkeys/authenticate/options", "/passkeys/authenticate/verify",
-        "/passkeys/2fa/options", "/passkeys/2fa/verify", "/api/setup/create-admin",
+        "/passkeys/2fa/options", "/passkeys/2fa/verify", "/refresh", "/api/auth/oidc/exchange",
+        "/api/setup/create-admin",
     )
 }
 WORKSPACE_READ_ROUTES = {
