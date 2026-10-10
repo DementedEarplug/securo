@@ -5,6 +5,7 @@ each workspace link it and keep only its own accounts.
 """
 import uuid
 from contextlib import contextmanager
+from dataclasses import replace
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from unittest.mock import AsyncMock, patch
@@ -70,7 +71,7 @@ def _using(provider: AsyncMock):
         yield
 
 
-async def _accounts(session: AsyncSession, connection_id: uuid.UUID) -> dict[str, Account]:
+async def _accounts(session: AsyncSession, connection_id: uuid.UUID) -> dict[str | None, Account]:
     rows = await session.execute(select(Account).where(Account.connection_id == connection_id))
     return {account.external_id: account for account in rows.scalars()}
 
@@ -81,6 +82,12 @@ async def _link(session, test_user, test_workspace, provider, *, select_accounts
             session, test_workspace.id, test_user.id, "token", "simplefin",
             select_accounts=select_accounts,
         )
+
+
+async def _listing(session: AsyncSession, connection_id: uuid.UUID, workspace_id: uuid.UUID) -> dict:
+    listing = await get_connection_accounts(session, connection_id, workspace_id)
+    assert listing is not None
+    return listing
 
 
 async def _sync(session, connection, test_user, test_workspace):
@@ -96,7 +103,7 @@ async def test_linking_with_selection_imports_nothing_and_lists_the_accounts(
 
     provider.get_transactions.assert_not_awaited()
     assert await _accounts(session, connection.id) == {}
-    listing = await get_connection_accounts(session, connection.id, test_workspace.id)
+    listing = await _listing(session, connection.id, test_workspace.id)
     assert listing["awaiting_selection"] is True
     assert [(a["external_id"], a["included"], a["institution_name"]) for a in listing["accounts"]] == [
         ("acc-mine", True, "First Bank"),
@@ -112,7 +119,7 @@ async def test_linking_without_selection_still_imports_everything(
     connection = await _link(session, test_user, test_workspace, provider, select_accounts=False)
 
     assert set(await _accounts(session, connection.id)) == {"acc-mine", "acc-hers"}
-    listing = await get_connection_accounts(session, connection.id, test_workspace.id)
+    listing = await _listing(session, connection.id, test_workspace.id)
     assert listing["awaiting_selection"] is False
 
 
@@ -141,6 +148,8 @@ async def test_first_selection_imports_only_the_chosen_accounts_with_full_histor
         session, connection.id, test_workspace.id,
         excluded=["acc-hers"], import_new_accounts=True, remove_history=[],
     )
+
+    assert connection is not None
     assert needs_import is True
     with _using(provider):
         connection, _ = await _sync(session, connection, test_user, test_workspace)
@@ -149,9 +158,9 @@ async def test_first_selection_imports_only_the_chosen_accounts_with_full_histor
     assert set(imported) == {"acc-mine"}
     fetched = [call.args[1:3] for call in provider.get_transactions.await_args_list]
     assert fetched == [("acc-mine", None)]
-    assert connection.settings["excluded_accounts"] == ["acc-hers"]
-    assert "awaiting_account_selection" not in connection.settings
-    assert "backfill_accounts" not in connection.settings
+    assert (connection.settings or {})["excluded_accounts"] == ["acc-hers"]
+    assert "awaiting_account_selection" not in (connection.settings or {})
+    assert "backfill_accounts" not in (connection.settings or {})
 
 
 @pytest.mark.asyncio
@@ -197,8 +206,8 @@ async def test_new_accounts_can_wait_for_opt_in(
         connection, _ = await _sync(session, connection, test_user, test_workspace)
 
     assert set(await _accounts(session, connection.id)) == {"acc-mine"}
-    assert connection.settings["excluded_accounts"] == ["acc-hers"]
-    listing = await get_connection_accounts(session, connection.id, test_workspace.id)
+    assert (connection.settings or {})["excluded_accounts"] == ["acc-hers"]
+    listing = await _listing(session, connection.id, test_workspace.id)
     assert {a["external_id"]: a["included"] for a in listing["accounts"]} == {
         "acc-mine": True, "acc-hers": False,
     }
@@ -229,17 +238,19 @@ async def test_excluding_an_imported_account_can_keep_its_history(
         session, connection.id, test_workspace.id,
         excluded=["acc-hers"], import_new_accounts=True, remove_history=[],
     )
+
+    assert connection is not None
     assert needs_import is False
 
     provider.get_accounts = AsyncMock(return_value=[
-        MINE, AccountData(**{**HERS.__dict__, "balance": Decimal("999")}),
+        MINE, replace(HERS, balance=Decimal("999")),
     ])
     with _using(provider):
         await _sync(session, connection, test_user, test_workspace)
 
     hers = (await _accounts(session, connection.id))["acc-hers"]
     assert hers.balance == Decimal("200")
-    listing = await get_connection_accounts(session, connection.id, test_workspace.id)
+    listing = await _listing(session, connection.id, test_workspace.id)
     kept = next(a for a in listing["accounts"] if a["external_id"] == "acc-hers")
     assert kept["included"] is False
     assert kept["account_id"] == hers.id
@@ -284,7 +295,7 @@ async def test_excluding_an_imported_account_can_remove_its_history(
         select(Transaction).where(Transaction.account_id == mine_id, Transaction.description == "Transfer")
     )).scalar_one()
     assert my_leg.transfer_pair_id is None
-    listing = await get_connection_accounts(session, connection.id, test_workspace.id)
+    listing = await _listing(session, connection.id, test_workspace.id)
     assert {a["external_id"]: a["account_id"] is None for a in listing["accounts"]} == {
         "acc-mine": False, "acc-hers": True,
     }
@@ -307,8 +318,10 @@ async def test_opting_an_account_back_in_fetches_its_full_history(
         session, connection.id, test_workspace.id,
         excluded=[], import_new_accounts=True, remove_history=[],
     )
+
+    assert connection is not None
     assert needs_import is True
-    assert connection.settings["backfill_accounts"] == ["acc-hers"]
+    assert (connection.settings or {})["backfill_accounts"] == ["acc-hers"]
     provider.get_transactions.reset_mock()
     with _using(provider):
         connection, _ = await _sync(session, connection, test_user, test_workspace)
@@ -317,7 +330,7 @@ async def test_opting_an_account_back_in_fetches_its_full_history(
     assert since["acc-hers"] is None
     assert since["acc-mine"] is not None
     assert set(await _accounts(session, connection.id)) == {"acc-mine", "acc-hers"}
-    assert "backfill_accounts" not in connection.settings
+    assert "backfill_accounts" not in (connection.settings or {})
 
 
 @pytest.mark.asyncio
@@ -343,7 +356,7 @@ async def test_selection_rejects_unknown_accounts_and_removing_included_ones(
 async def test_connections_linked_before_snapshots_list_their_imported_accounts(
     session: AsyncSession, test_user, test_workspace, test_connection: BankConnection, test_account: Account
 ):
-    listing = await get_connection_accounts(session, test_connection.id, test_workspace.id)
+    listing = await _listing(session, test_connection.id, test_workspace.id)
 
     assert [(a["external_id"], a["included"], a["account_id"]) for a in listing["accounts"]] == [
         (test_account.external_id, True, test_account.id),
